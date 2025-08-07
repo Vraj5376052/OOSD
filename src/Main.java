@@ -1,44 +1,74 @@
-package src;
-
 import javafx.application.Application;
-import javafx.stage.Stage;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
-import javafx.animation.PauseTransition;
-import javafx.util.Duration;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
+import javafx.scene.control.Button;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import javafx.geometry.Pos;
 
 public class Main extends Application {
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        // Splash screen
-        Label splashLabel = new Label("TETRIS\n2006ICT / 2805ICT / 3815ICT\nGroup Name: <Your Team>");
-        splashLabel.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-alignment: center;");
-        StackPane splashPane = new StackPane(splashLabel);
-        splashPane.setStyle("-fx-background-color: #000000;");
-        Scene splashScene = new Scene(splashPane, 600, 400);
-
-        primaryStage.setTitle("Tetris Game");
-        primaryStage.setScene(splashScene);
-        primaryStage.show();
-
-        PauseTransition delay = new PauseTransition(Duration.seconds(3));
-        delay.setOnFinished(e -> {
-            try {
-                Parent mainMenu = FXMLLoader.load(getClass().getResource("/views/main_menu.fxml"));
-                primaryStage.setScene(new Scene(mainMenu));
-            } catch (Exception ex) {
-                System.out.println("Failed to load main_menu.fxml");
-                ex.printStackTrace();
-            }
-        });
-        delay.play();
-    }
+    private Stage primaryStage;
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    @Override
+    public void start(Stage stage) {
+        this.primaryStage = stage;
+        showMainScreen();
+    }
+
+    private void showMainScreen() {
+        Button btnConfigure = new Button("Configure");
+        Button btnPlay = new Button("Play");
+        Button btnExit = new Button("Exit");
+
+        btnConfigure.setOnAction(e -> showConfigScreen());
+        btnPlay.setOnAction(e -> showPlayScreen());
+        btnExit.setOnAction(e -> primaryStage.close());
+
+        VBox layout = new VBox(20);
+        layout.setAlignment(Pos.CENTER);
+        layout.getChildren().addAll(btnConfigure, btnPlay, btnExit);
+
+        Scene scene = new Scene(layout, 400, 300);
+        primaryStage.setTitle("Tetris - Main Menu");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    private void showConfigScreen() {
+        Button btnBack = new Button("Back to Main");
+
+        // Example configuration options
+        Button dummySetting = new Button("Toggle Sound (not functional yet)");
+
+        btnBack.setOnAction(e -> showMainScreen());
+
+        VBox layout = new VBox(20);
+        layout.setAlignment(Pos.CENTER);
+        layout.getChildren().addAll(dummySetting, btnBack);
+
+        Scene scene = new Scene(layout, 400, 300);
+        primaryStage.setTitle("Tetris - Configuration");
+        primaryStage.setScene(scene);
+    }
+
+    private void showPlayScreen() {
+        Button btnBack = new Button("Back to Main");
+
+        // Placeholder for future game content
+        Button dummyGame = new Button("Play Mode (Animation TBD)");
+
+        btnBack.setOnAction(e -> showMainScreen());
+
+        VBox layout = new VBox(20);
+        layout.setAlignment(Pos.CENTER);
+        layout.getChildren().addAll(dummyGame, btnBack);
+
+        Scene scene = new Scene(layout, 400, 300);
+        primaryStage.setTitle("Tetris - Game Screen");
+        primaryStage.setScene(scene);
     }
 }
