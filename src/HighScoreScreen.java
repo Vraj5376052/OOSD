@@ -64,7 +64,7 @@ public class HighScoreScreen extends Application {
         root.getChildren().add(grid);
 
         // Back button
-        Button backButton = new Button("Back");
+        Button backButton = new Button("Return to Menu");
         backButton.setPrefWidth(100);
         root.getChildren().add(backButton);
 
