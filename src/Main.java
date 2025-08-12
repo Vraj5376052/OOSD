@@ -47,9 +47,9 @@ public class SplashScreen extends Application {
 
 public class Main extends Application {
 
-    private static final int CELL_SIZE = 30;
-    private static final int COLUMNS = 10;
-    private static final int ROWS = 20;
+    private int CELL_SIZE = 30;
+    private int COLUMNS = 10;
+    private int ROWS = 20;
     private int LEVEL = 5;
     private boolean MUSIC = false;
     private boolean SOUND_EFFECTS = false;
