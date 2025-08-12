@@ -40,16 +40,16 @@ public class HighScoreScreen extends Application {
 
         // Sample data
         String[][] data = {
-                {"Tom", "869613"},
-                {"Anna", "754569"},
-                {"Jerry", "642871"},
-                {"Mike", "549280"},
-                {"Tom", "537728"},
+                {"Vraj", "869613"},
+                {"Tom", "754569"},
+                {"Anh", "642871"},
+                {"Jack", "549280"},
+                {"Luis", "537728"},
                 {"Tom", "462740"},
-                {"Larry", "366765"},
-                {"Alice", "326181"},
-                {"Anna", "301649"},
-                {"Tom", "260598"},
+                {"Vraj", "366765"},
+                {"Vraj", "326181"},
+                {"Luis", "301649"},
+                {"Jack", "260598"},
         };
         // Populate GridPane with data
         for (int i = 0; i < data.length; i++) {
