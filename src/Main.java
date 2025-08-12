@@ -50,6 +50,11 @@ public class Main extends Application {
     private static final int CELL_SIZE = 30;
     private static final int COLUMNS = 10;
     private static final int ROWS = 20;
+    private int LEVEL = 5;
+    private boolean MUSIC = false;
+    private boolean SOUND_EFFECTS = false;
+    private boolean AI_PLAY = false;
+    private boolean EXTEND_MODE = false;
 
     private Pane gamePane;
     private Timeline timeline;
@@ -81,14 +86,113 @@ public class Main extends Application {
         primaryStage.show();
     }
 
+
     private void showConfigScreen(Stage stage) {
+        Label widthValue = new Label(String.valueOf(COLUMNS));
+        Label heightValue = new Label(String.valueOf(ROWS));
+        Label LEVELValue = new Label(String.valueOf(LEVEL));
+    
+        Slider widthSlider = new Slider(5, 15, COLUMNS);
+        widthSlider.setMajorTickUnit(1);
+        widthSlider.setMinorTickCount(0);
+        widthSlider.setSnapToTicks(true);
+        widthSlider.setShowTickMarks(true);
+        widthSlider.setShowTickLabels(true);
+        widthSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            COLUMNS = newVal.intValue();
+            widthValue.setText(String.valueOf(COLUMNS));
+        });
+    
+        Slider heightSlider = new Slider(15, 30, ROWS);
+        heightSlider.setMajorTickUnit(1);
+        heightSlider.setMinorTickCount(0);
+        heightSlider.setSnapToTicks(true);
+        heightSlider.setShowTickMarks(true);
+        heightSlider.setShowTickLabels(true);
+        heightSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            ROWS = newVal.intValue();
+            heightValue.setText(String.valueOf(ROWS));
+        });
+    
+        Slider LEVELSlider = new Slider(3, 10, LEVEL);
+        LEVELSlider.setMajorTickUnit(1);
+        LEVELSlider.setMinorTickCount(0);
+        LEVELSlider.setSnapToTicks(true);
+        LEVELSlider.setShowTickMarks(true);
+        LEVELSlider.setShowTickLabels(true);
+        LEVELSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+            LEVEL = newVal.intValue();
+            LEVELValue.setText(String.valueOf(LEVEL));
+        });
+    
+        Label musicValue = new Label(MUSIC ? "ON" : "OFF");
+        CheckBox musicCheck = new CheckBox("MUSIC");
+        musicCheck.setSelected(MUSIC);
+        musicCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            MUSIC = newVal;
+            musicValue.setText(MUSIC ? "ON" : "OFF");
+        });
+    
+        Label soundValue = new Label(SOUND_EFFECTS ? "ON" : "OFF");
+        CheckBox soundCheck = new CheckBox("SOUND EFFECT");
+        soundCheck.setSelected(SOUND_EFFECTS);
+        soundCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            SOUND_EFFECTS = newVal;
+            soundValue.setText(SOUND_EFFECTS ? "ON" : "OFF");
+        });
+    
+        Label aiValue = new Label(AI_PLAY ? "ON" : "OFF");
+        CheckBox aiCheck = new CheckBox("AI PLAY");
+        aiCheck.setSelected(AI_PLAY);
+        aiCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            AI_PLAY = newVal;
+            aiValue.setText(AI_PLAY ? "ON" : "OFF");
+        });
+    
+        Label extendValue = new Label(EXTEND_MODE ? "ON" : "OFF");
+        CheckBox extendCheck = new CheckBox("EXTEND MODE");
+        extendCheck.setSelected(EXTEND_MODE);
+        extendCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            EXTEND_MODE = newVal;
+            extendValue.setText(EXTEND_MODE ? "ON" : "OFF");
+        });
+    
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> stage.setScene(homeScene));
-
-        VBox configLayout = new VBox(10, new Button("Setting 1"), new Button("Setting 2"), backButton);
-        configLayout.setAlignment(Pos.CENTER);
-
-        Scene configScene = new Scene(configLayout, 300, 200);
+        backButton.setOnAction(e -> start(stage));
+    
+        GridPane grid = new GridPane();
+        grid.setVgap(15);
+        grid.setHgap(20);
+        grid.setAlignment(Pos.CENTER);
+    
+        grid.add(new Label("FIELD WIDTH:"), 0, 0);
+        grid.add(widthSlider, 1, 0);
+        grid.add(widthValue, 2, 0);
+    
+        grid.add(new Label("FIELD HEIGHT:"), 0, 1);
+        grid.add(heightSlider, 1, 1);
+        grid.add(heightValue, 2, 1);
+    
+        grid.add(new Label("GAME LEVEL:"), 0, 2);
+        grid.add(LEVELSlider, 1, 2);
+        grid.add(LEVELValue, 2, 2);
+    
+        grid.add(musicCheck, 0, 3);
+        grid.add(musicValue, 2, 3);
+    
+        grid.add(soundCheck, 0, 4);
+        grid.add(soundValue, 2, 4);
+    
+        grid.add(aiCheck, 0, 5);
+        grid.add(aiValue, 2, 5);
+    
+        grid.add(extendCheck, 0, 6);
+        grid.add(extendValue, 2, 6);
+    
+        grid.add(backButton, 0, 7, 3, 1);
+        GridPane.setHalignment(backButton, HPos.CENTER);
+    
+        Scene configScene = new Scene(grid, 450, 400);
         stage.setTitle("Configuration");
         stage.setScene(configScene);
     }
