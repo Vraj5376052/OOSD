@@ -17,6 +17,34 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+public class SplashScreen extends Application {
+
+    @Override
+    public void start(Stage primaryStage) {
+        // Create the splash content
+        Label splashText = new Label("Tetris Game, Group 45, 2006ICT / 2805ICT / 3815ICT");
+        splashText.setStyle("-fx-font-size: 24px; -fx-text-alignment: center;");
+
+        StackPane root = new StackPane(splashText);
+        root.setStyle("-fx-background-color: gray; -fx-alignment: center;");
+
+        Scene splashScene = new Scene(root, 400, 300);
+
+        // Create splash stage
+        Stage splashStage = new Stage(StageStyle.UNDECORATED);
+        splashStage.setScene(splashScene);
+        splashStage.show();
+
+        // Show splash for 3 seconds, then open main menu
+        PauseTransition delay = new PauseTransition(Duration.seconds(3));
+        delay.setOnFinished(event -> {
+            splashStage.close();
+            showMain(primaryStage);
+        });
+        delay.play();
+    }
+}
+
 public class Main extends Application {
 
     private static final int CELL_SIZE = 30;
@@ -36,7 +64,9 @@ public class Main extends Application {
         // Main menu buttons
         Button btnConfigure = new Button("Configure");
         Button btnPlay = new Button("Play");
-        Button btnExit = new Button("Exit");
+        Button exitButton = new Button("Exit");
+        exitButton.setOnAction(e -> showExitConfirmation(stage));
+
 
         btnConfigure.setOnAction(e -> showConfigScreen(primaryStage));
         btnPlay.setOnAction(e -> showPlayScreen(primaryStage));
@@ -294,6 +324,45 @@ public class Main extends Application {
         public static int[][] getRandomShape() {
             return SHAPES[new Random().nextInt(SHAPES.length)];
         }
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
+
+public class Exit extends Application {
+
+    @Override
+    public void start(Stage stage) {
+        Button exitButton = new Button("Exit");
+        exitButton.setOnAction(e -> showExitConfirmation(stage));
+
+        VBox root = new VBox(10, exitButton);
+        root.setStyle("-fx-alignment: center; -fx-padding: 20;");
+
+        Scene scene = new Scene(root, 400, 300);
+        stage.setTitle("Tetris Main Menu");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    private void showExitConfirmation(Stage stage) {
+        Alert alert = new Alert(AlertType.CONFIRMATION);
+        alert.setTitle("Exit Confirmation");
+        alert.setHeaderText("Are you sure you want to exit?");
+        alert.setContentText("Choose your option.");
+
+        ButtonType yesButton = new ButtonType("Yes");
+        ButtonType noButton = new ButtonType("No");
+
+        alert.getButtonTypes().setAll(yesButton, noButton);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == yesButton) {
+            stage.close(); // Close the main window
+        }
+        // If "No" is clicked, dialog closes automatically and program continues
     }
 
     public static void main(String[] args) {
