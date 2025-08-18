@@ -287,10 +287,13 @@ public class Main extends Application {
             }
             if (paused.get() || currentTetromino == null) return;
 
-            if (e.getCode() == KeyCode.LEFT)      currentTetromino.move(-1, 0);
-            else if (e.getCode() == KeyCode.RIGHT) currentTetromino.move(1, 0);
-            else if (e.getCode() == KeyCode.DOWN)  moveDown();
-            else if (e.getCode() == KeyCode.UP)    currentTetromino.rotate();
+            switch (e.getCode()) {
+                case LEFT  -> currentTetromino.move(-1, 0);
+                case RIGHT -> currentTetromino.move(1, 0);
+                case DOWN  -> moveDown();
+                case UP    -> currentTetromino.rotate();
+                default    -> {}
+            }
         });
 
         playScene.getRoot().requestFocus();
