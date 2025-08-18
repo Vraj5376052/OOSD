@@ -118,8 +118,8 @@ public class HighScoreScreen {
 
         // Sample data (kept from your original file)
         String[][] data = {
-                {"Vraj", "869613"},
-                {"Tom", "754569"},
+                {"Tom", "869613"},
+                {"Vraj", "754569"},
                 {"Anh", "642871"},
                 {"Jack", "549280"},
                 {"Luis", "537728"},

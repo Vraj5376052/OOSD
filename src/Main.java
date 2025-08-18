@@ -64,7 +64,7 @@ public class Main extends Application {
         StackPane root = new StackPane(splashText);
         root.setStyle("-fx-background-color: gray; -fx-alignment: center;");
 
-        Scene splashScene = new Scene(root, 600, 300);
+        Scene splashScene = new Scene(root, 480, 360);
 
         Stage splashStage = new Stage(StageStyle.UNDECORATED);
         splashStage.setScene(splashScene);
