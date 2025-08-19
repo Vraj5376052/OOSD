@@ -54,30 +54,9 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        showSplashScreen(primaryStage);
+        SplashScreen.show(primaryStage, () -> showMainMenu(primaryStage));
     }
 
-    private void showSplashScreen(Stage primaryStage) {
-        Label splashText = new Label("Tetris Game, Group 45, 2006ICT / 2805ICT / 3815ICT");
-        splashText.setStyle("-fx-font-size: 24px; -fx-text-alignment: center;");
-
-        StackPane root = new StackPane(splashText);
-        root.setStyle("-fx-background-color: gray; -fx-alignment: center;");
-
-        Scene splashScene = new Scene(root, 480, 360);
-
-        Stage splashStage = new Stage(StageStyle.UNDECORATED);
-        splashStage.setScene(splashScene);
-        splashStage.show();
-        splashStage.centerOnScreen();
-
-        PauseTransition delay = new PauseTransition(Duration.seconds(3));
-        delay.setOnFinished(event -> {
-            splashStage.close();
-            showMainMenu(primaryStage);
-        });
-        delay.play();
-    }
 
     private void showMainMenu(Stage primaryStage) {
         Label title = new Label("Main Menu");
@@ -119,81 +98,10 @@ public class Main extends Application {
 
 
     private void showConfigScreen(Stage stage) {
-        // live value labels
-        Label widthValue = new Label(String.valueOf(COLUMNS));
-        Label heightValue = new Label(String.valueOf(ROWS));
-        Label levelValue = new Label(String.valueOf(LEVEL));
-        Label musicValue = new Label(MUSIC ? "On" : "Off");
-        Label soundValue = new Label(SOUND_EFFECTS ? "On" : "Off");
-        Label aiValue = new Label(AI_PLAY ? "On" : "Off");
-        Label extendValue = new Label(EXTEND_MODE ? "On" : "Off");
-
-        // sliders
-        Slider widthSlider = new Slider(5, 15, COLUMNS);
-        widthSlider.setMajorTickUnit(1); widthSlider.setSnapToTicks(true);
-        widthSlider.setShowTickMarks(true); widthSlider.setShowTickLabels(true);
-        widthSlider.valueProperty().addListener((o,ov,nv)->{ COLUMNS = nv.intValue(); widthValue.setText(""+COLUMNS); });
-
-        Slider heightSlider = new Slider(15, 30, ROWS);
-        heightSlider.setMajorTickUnit(1); heightSlider.setSnapToTicks(true);
-        heightSlider.setShowTickMarks(true); heightSlider.setShowTickLabels(true);
-        heightSlider.valueProperty().addListener((o,ov,nv)->{ ROWS = nv.intValue(); heightValue.setText(""+ROWS); });
-
-        Slider levelSlider = new Slider(1, 10, LEVEL);
-        levelSlider.setMajorTickUnit(1); levelSlider.setSnapToTicks(true);
-        levelSlider.setShowTickMarks(true); levelSlider.setShowTickLabels(true);
-        levelSlider.valueProperty().addListener((o,ov,nv)->{ LEVEL = nv.intValue(); levelValue.setText(""+LEVEL); });
-
-        // checkboxes
-        CheckBox musicCheck = new CheckBox();
-        musicCheck.setSelected(MUSIC);
-        musicCheck.selectedProperty().addListener((o,ov,nv)->{ MUSIC = nv; musicValue.setText(nv?"On":"Off"); });
-
-        CheckBox soundCheck = new CheckBox();
-        soundCheck.setSelected(SOUND_EFFECTS);
-        soundCheck.selectedProperty().addListener((o,ov,nv)->{ SOUND_EFFECTS = nv; soundValue.setText(nv?"On":"Off"); });
-
-        CheckBox aiCheck = new CheckBox();
-        aiCheck.setSelected(AI_PLAY);
-        aiCheck.selectedProperty().addListener((o,ov,nv)->{ AI_PLAY = nv; aiValue.setText(nv?"On":"Off"); });
-
-        CheckBox extendCheck = new CheckBox();
-        extendCheck.setSelected(EXTEND_MODE);
-        extendCheck.selectedProperty().addListener((o,ov,nv)->{ EXTEND_MODE = nv; extendValue.setText(nv?"On":"Off"); });
-
-        // grid
-        GridPane grid = new GridPane();
-        grid.setHgap(20); grid.setVgap(14); grid.setAlignment(Pos.CENTER);
-        ColumnConstraints c0 = new ColumnConstraints(); c0.setPrefWidth(220);
-        ColumnConstraints c1 = new ColumnConstraints(); c1.setPercentWidth(60);
-        ColumnConstraints c2 = new ColumnConstraints(); c2.setPrefWidth(60);
-        grid.getColumnConstraints().addAll(c0, c1, c2);
-
-        grid.add(new Label("Field Width (No of cells):"), 0, 0); grid.add(widthSlider, 1, 0); grid.add(widthValue, 2, 0);
-        grid.add(new Label("Field Height (No of cells):"),0, 1); grid.add(heightSlider,1, 1); grid.add(heightValue,2, 1);
-        grid.add(new Label("Game Level:"),                 0, 2); grid.add(levelSlider, 1, 2); grid.add(levelValue, 2, 2);
-
-        grid.add(new Label("Music (On/Off):"),            0, 3); grid.add(musicCheck, 1, 3); grid.add(musicValue, 2, 3);
-        grid.add(new Label("Sound Effect (On/Off):"),     0, 4); grid.add(soundCheck,1, 4); grid.add(soundValue,2, 4);
-        grid.add(new Label("AI Play (On/Off):"),          0, 5); grid.add(aiCheck,   1, 5); grid.add(aiValue,   2, 5);
-        grid.add(new Label("Extend Mode (On/Off):"),      0, 6); grid.add(extendCheck,1,6); grid.add(extendValue,2,6);
-
-        Label title = new Label("Configuration");
-        title.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
-        HBox top = new HBox(title); top.setAlignment(Pos.CENTER); top.setPadding(new Insets(10,0,10,0));
-
-        Button back = new Button("Back");
-        back.setOnAction(e -> stage.setScene(homeScene));
-        HBox bottom = new HBox(back); bottom.setAlignment(Pos.CENTER); bottom.setPadding(new Insets(8,0,8,0));
-
-        BorderPane root = new BorderPane();
-        root.setTop(top);
-        root.setCenter(grid);
-        root.setBottom(bottom);
-
-        stage.setTitle("Tetris");
-        stage.setScene(new Scene(root, 640, 420));
+        Configuration.show(stage, () -> stage.setScene(homeScene),
+                COLUMNS, ROWS, LEVEL, MUSIC, SOUND_EFFECTS, AI_PLAY, EXTEND_MODE);
     }
+
 
 
     private void showHighScoreScreen(Stage stage) {
@@ -201,6 +109,7 @@ public class Main extends Application {
         stage.setTitle("High Scores");
         stage.setScene(scene);
     }
+
 
     private void showPlayScreen(Stage stage) {
         lockedBlocks.clear();
