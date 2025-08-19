@@ -22,6 +22,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.geometry.Insets;
+import javafx.scene.Group;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.shape.Rectangle;
+import javafx.application.Platform;
+
+
+
 public class Main extends Application {
 
     private static final int CELL_SIZE = 30;
@@ -52,11 +64,12 @@ public class Main extends Application {
         StackPane root = new StackPane(splashText);
         root.setStyle("-fx-background-color: gray; -fx-alignment: center;");
 
-        Scene splashScene = new Scene(root, 600, 300);
+        Scene splashScene = new Scene(root, 480, 360);
 
         Stage splashStage = new Stage(StageStyle.UNDECORATED);
         splashStage.setScene(splashScene);
         splashStage.show();
+        splashStage.centerOnScreen();
 
         PauseTransition delay = new PauseTransition(Duration.seconds(3));
         delay.setOnFinished(event -> {
@@ -67,177 +80,124 @@ public class Main extends Application {
     }
 
     private void showMainMenu(Stage primaryStage) {
-        Button btnConfigure = new Button("Configure");
+        Label title = new Label("Main Menu");
+        title.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
+
         Button btnPlay = new Button("Play");
+        Button btnConfig = new Button("Configuration"); // fix typo
         Button btnHighScore = new Button("High Scores");
         Button btnExit = new Button("Exit");
 
-        btnConfigure.setOnAction(e -> showConfigScreen(primaryStage));
+        // Button
+        for (Button b : new Button[]{btnPlay, btnConfig, btnHighScore, btnExit}) {
+            b.setPrefWidth(240);
+        }
+
         btnPlay.setOnAction(e -> showPlayScreen(primaryStage));
+        btnConfig.setOnAction(e -> showConfigScreen(primaryStage));
         btnHighScore.setOnAction(e -> showHighScoreScreen(primaryStage));
-        btnExit.setOnAction(e -> primaryStage.close());
+        btnExit.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Exit Confirmation");
+            alert.setHeaderText(null);
+            alert.setContentText("Are you sure you want to exit?");
+            ButtonType yes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
+            ButtonType no  = new ButtonType("No",  ButtonBar.ButtonData.CANCEL_CLOSE);
+            alert.getButtonTypes().setAll(no, yes);
+            alert.showAndWait().ifPresent(bt -> { if (bt == yes) Platform.exit(); });
+        });
 
-        VBox mainLayout = new VBox(20, btnConfigure, btnPlay, btnHighScore, btnExit);
-        mainLayout.setAlignment(Pos.CENTER);
-        homeScene = new Scene(mainLayout, 400, 400);
+        VBox box = new VBox(18, title, btnPlay, btnConfig, btnHighScore, btnExit);
+        box.setAlignment(Pos.TOP_CENTER);
+        box.setPadding(new Insets(20, 30, 20, 30));
 
-        primaryStage.setTitle("Tetris Main Menu");
+        homeScene = new Scene(box, 480, 360);
+        primaryStage.setTitle("Tetris");
         primaryStage.setScene(homeScene);
         primaryStage.show();
     }
 
+
     private void showConfigScreen(Stage stage) {
+        // live value labels
         Label widthValue = new Label(String.valueOf(COLUMNS));
         Label heightValue = new Label(String.valueOf(ROWS));
-        Label LEVELValue = new Label(String.valueOf(LEVEL));
+        Label levelValue = new Label(String.valueOf(LEVEL));
+        Label musicValue = new Label(MUSIC ? "On" : "Off");
+        Label soundValue = new Label(SOUND_EFFECTS ? "On" : "Off");
+        Label aiValue = new Label(AI_PLAY ? "On" : "Off");
+        Label extendValue = new Label(EXTEND_MODE ? "On" : "Off");
 
+        // sliders
         Slider widthSlider = new Slider(5, 15, COLUMNS);
-        widthSlider.setMajorTickUnit(1);
-        widthSlider.setSnapToTicks(true);
-        widthSlider.setShowTickMarks(true);
-        widthSlider.setShowTickLabels(true);
-        widthSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            COLUMNS = newVal.intValue();
-            widthValue.setText(String.valueOf(COLUMNS));
-        });
+        widthSlider.setMajorTickUnit(1); widthSlider.setSnapToTicks(true);
+        widthSlider.setShowTickMarks(true); widthSlider.setShowTickLabels(true);
+        widthSlider.valueProperty().addListener((o,ov,nv)->{ COLUMNS = nv.intValue(); widthValue.setText(""+COLUMNS); });
 
         Slider heightSlider = new Slider(15, 30, ROWS);
-        heightSlider.setMajorTickUnit(1);
-        heightSlider.setSnapToTicks(true);
-        heightSlider.setShowTickMarks(true);
-        heightSlider.setShowTickLabels(true);
-        heightSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            ROWS = newVal.intValue();
-            heightValue.setText(String.valueOf(ROWS));
-        });
+        heightSlider.setMajorTickUnit(1); heightSlider.setSnapToTicks(true);
+        heightSlider.setShowTickMarks(true); heightSlider.setShowTickLabels(true);
+        heightSlider.valueProperty().addListener((o,ov,nv)->{ ROWS = nv.intValue(); heightValue.setText(""+ROWS); });
 
-        Slider LEVELSlider = new Slider(3, 10, LEVEL);
-        LEVELSlider.setMajorTickUnit(1);
-        LEVELSlider.setSnapToTicks(true);
-        LEVELSlider.setShowTickMarks(true);
-        LEVELSlider.setShowTickLabels(true);
-        LEVELSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            LEVEL = newVal.intValue();
-            LEVELValue.setText(String.valueOf(LEVEL));
-        });
+        Slider levelSlider = new Slider(1, 10, LEVEL);
+        levelSlider.setMajorTickUnit(1); levelSlider.setSnapToTicks(true);
+        levelSlider.setShowTickMarks(true); levelSlider.setShowTickLabels(true);
+        levelSlider.valueProperty().addListener((o,ov,nv)->{ LEVEL = nv.intValue(); levelValue.setText(""+LEVEL); });
 
-        Label musicValue = new Label(MUSIC ? "ON" : "OFF");
-        CheckBox musicCheck = new CheckBox("MUSIC");
+        // checkboxes
+        CheckBox musicCheck = new CheckBox();
         musicCheck.setSelected(MUSIC);
-        musicCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
-            MUSIC = newVal;
-            musicValue.setText(MUSIC ? "ON" : "OFF");
-        });
+        musicCheck.selectedProperty().addListener((o,ov,nv)->{ MUSIC = nv; musicValue.setText(nv?"On":"Off"); });
 
-        Label soundValue = new Label(SOUND_EFFECTS ? "ON" : "OFF");
-        CheckBox soundCheck = new CheckBox("SOUND EFFECT");
+        CheckBox soundCheck = new CheckBox();
         soundCheck.setSelected(SOUND_EFFECTS);
-        soundCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
-            SOUND_EFFECTS = newVal;
-            soundValue.setText(SOUND_EFFECTS ? "ON" : "OFF");
-        });
+        soundCheck.selectedProperty().addListener((o,ov,nv)->{ SOUND_EFFECTS = nv; soundValue.setText(nv?"On":"Off"); });
 
-        Label aiValue = new Label(AI_PLAY ? "ON" : "OFF");
-        CheckBox aiCheck = new CheckBox("AI PLAY");
+        CheckBox aiCheck = new CheckBox();
         aiCheck.setSelected(AI_PLAY);
-        aiCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
-            AI_PLAY = newVal;
-            aiValue.setText(AI_PLAY ? "ON" : "OFF");
-        });
+        aiCheck.selectedProperty().addListener((o,ov,nv)->{ AI_PLAY = nv; aiValue.setText(nv?"On":"Off"); });
 
-        Label extendValue = new Label(EXTEND_MODE ? "ON" : "OFF");
-        CheckBox extendCheck = new CheckBox("EXTEND MODE");
+        CheckBox extendCheck = new CheckBox();
         extendCheck.setSelected(EXTEND_MODE);
-        extendCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
-            EXTEND_MODE = newVal;
-            extendValue.setText(EXTEND_MODE ? "ON" : "OFF");
-        });
+        extendCheck.selectedProperty().addListener((o,ov,nv)->{ EXTEND_MODE = nv; extendValue.setText(nv?"On":"Off"); });
 
-        Button backButton = new Button("Back");
-        backButton.setOnAction(e -> stage.setScene(homeScene));
-
+        // grid
         GridPane grid = new GridPane();
-        grid.setVgap(15);
-        grid.setHgap(20);
-        grid.setAlignment(Pos.CENTER);
+        grid.setHgap(20); grid.setVgap(14); grid.setAlignment(Pos.CENTER);
+        ColumnConstraints c0 = new ColumnConstraints(); c0.setPrefWidth(220);
+        ColumnConstraints c1 = new ColumnConstraints(); c1.setPercentWidth(60);
+        ColumnConstraints c2 = new ColumnConstraints(); c2.setPrefWidth(60);
+        grid.getColumnConstraints().addAll(c0, c1, c2);
 
-        grid.add(new Label("FIELD WIDTH:"), 0, 0);
-        grid.add(widthSlider, 1, 0);
-        grid.add(widthValue, 2, 0);
+        grid.add(new Label("Field Width (No of cells):"), 0, 0); grid.add(widthSlider, 1, 0); grid.add(widthValue, 2, 0);
+        grid.add(new Label("Field Height (No of cells):"),0, 1); grid.add(heightSlider,1, 1); grid.add(heightValue,2, 1);
+        grid.add(new Label("Game Level:"),                 0, 2); grid.add(levelSlider, 1, 2); grid.add(levelValue, 2, 2);
 
-        grid.add(new Label("FIELD HEIGHT:"), 0, 1);
-        grid.add(heightSlider, 1, 1);
-        grid.add(heightValue, 2, 1);
+        grid.add(new Label("Music (On/Off):"),            0, 3); grid.add(musicCheck, 1, 3); grid.add(musicValue, 2, 3);
+        grid.add(new Label("Sound Effect (On/Off):"),     0, 4); grid.add(soundCheck,1, 4); grid.add(soundValue,2, 4);
+        grid.add(new Label("AI Play (On/Off):"),          0, 5); grid.add(aiCheck,   1, 5); grid.add(aiValue,   2, 5);
+        grid.add(new Label("Extend Mode (On/Off):"),      0, 6); grid.add(extendCheck,1,6); grid.add(extendValue,2,6);
 
-        grid.add(new Label("GAME LEVEL:"), 0, 2);
-        grid.add(LEVELSlider, 1, 2);
-        grid.add(LEVELValue, 2, 2);
+        Label title = new Label("Configuration");
+        title.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
+        HBox top = new HBox(title); top.setAlignment(Pos.CENTER); top.setPadding(new Insets(10,0,10,0));
 
-        grid.add(musicCheck, 0, 3);
-        grid.add(musicValue, 2, 3);
+        Button back = new Button("Back");
+        back.setOnAction(e -> stage.setScene(homeScene));
+        HBox bottom = new HBox(back); bottom.setAlignment(Pos.CENTER); bottom.setPadding(new Insets(8,0,8,0));
 
-        grid.add(soundCheck, 0, 4);
-        grid.add(soundValue, 2, 4);
+        BorderPane root = new BorderPane();
+        root.setTop(top);
+        root.setCenter(grid);
+        root.setBottom(bottom);
 
-        grid.add(aiCheck, 0, 5);
-        grid.add(aiValue, 2, 5);
-
-        grid.add(extendCheck, 0, 6);
-        grid.add(extendValue, 2, 6);
-
-        grid.add(backButton, 0, 7, 3, 1);
-        GridPane.setHalignment(backButton, HPos.CENTER);
-
-        Scene configScene = new Scene(grid, 450, 400);
-        stage.setTitle("Configuration");
-        stage.setScene(configScene);
+        stage.setTitle("Tetris");
+        stage.setScene(new Scene(root, 640, 420));
     }
 
+
     private void showHighScoreScreen(Stage stage) {
-        VBox root = new VBox(15);
-        root.setAlignment(Pos.TOP_CENTER);
-
-        Label title = new Label("High Scores");
-        title.setFont(Font.font("SansSerif", FontWeight.BOLD, 24));
-        root.getChildren().add(title);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(40);
-        grid.setVgap(10);
-        grid.setAlignment(Pos.CENTER);
-
-        Label nameHeader = new Label("Name");
-        nameHeader.setFont(Font.font("SansSerif", FontWeight.BOLD, 16));
-        Label scoreHeader = new Label("Score");
-        scoreHeader.setFont(Font.font("SansSerif", FontWeight.BOLD, 16));
-
-        grid.add(nameHeader, 0, 0);
-        grid.add(scoreHeader, 1, 0);
-
-        String[][] data = {
-                {"Tom", "869613"}, {"Vraj", "754569"}, {"Anh", "642871"},
-                {"Jack", "549280"}, {"Luis", "537728"}, {"Anna", "462740"},
-                {"Larry", "366765"}, {"Alice", "326181"}, {"Spiderman", "301649"},
-                {"Chris", "260598"},
-        };
-
-        for (int i = 0; i < data.length; i++) {
-            Label name = new Label(data[i][0]);
-            name.setFont(Font.font("SansSerif", 14));
-            Label score = new Label(data[i][1]);
-            score.setFont(Font.font("SansSerif", 14));
-            grid.add(name, 0, i + 1);
-            grid.add(score, 1, i + 1);
-        }
-
-        root.getChildren().add(grid);
-
-        Button backButton = new Button("Back");
-        backButton.setPrefWidth(100);
-        backButton.setOnAction(e -> stage.setScene(homeScene));
-        root.getChildren().add(backButton);
-
-        Scene scene = new Scene(root, 450, 500);
+        Scene scene = HighScoreScreen.create(() -> stage.setScene(homeScene));
         stage.setTitle("High Scores");
         stage.setScene(scene);
     }
@@ -245,24 +205,66 @@ public class Main extends Application {
     private void showPlayScreen(Stage stage) {
         lockedBlocks.clear();
 
+        // game field
         gamePane = new Pane();
         gamePane.setPrefSize(COLUMNS * CELL_SIZE, ROWS * CELL_SIZE);
+        gamePane.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        gamePane.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        StackPane.setAlignment(gamePane, Pos.CENTER);
 
         Canvas gridCanvas = new Canvas(COLUMNS * CELL_SIZE, ROWS * CELL_SIZE);
         drawGrid(gridCanvas.getGraphicsContext2D());
         gamePane.getChildren().add(gridCanvas);
 
+        // frame
+        Rectangle frame = new Rectangle(COLUMNS * CELL_SIZE + 2, ROWS * CELL_SIZE + 2);
+        frame.setFill(Color.TRANSPARENT);
+        frame.setStroke(Color.SILVER);
+
+        // pause label
+        Label pauseHint = new Label("Game is paused,\npress P to continue...");
+        pauseHint.setVisible(false);
+
+        // center game field + frame
+        StackPane center = new StackPane(new Group(frame), gamePane, pauseHint);
+        center.setPadding(new Insets(10));
+        center.setAlignment(Pos.CENTER);
+
+        StackPane.setAlignment(pauseHint, Pos.CENTER_LEFT);
+        StackPane.setMargin(pauseHint, new Insets(0, 0, 0, 20));
+
+        // top title
+        Label title = new Label("Play");
+        title.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
+        HBox top = new HBox(title); top.setAlignment(Pos.CENTER); top.setPadding(new Insets(8,0,4,0));
+
+        // back button with stop confirmation
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> {
-            if (timeline != null) timeline.stop();
-            stage.setScene(homeScene);
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Stop Game");
+            alert.setHeaderText(null);
+            alert.setContentText("Are you sure to stop the current game?");
+            ButtonType no  = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+            ButtonType yes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
+            alert.getButtonTypes().setAll(no, yes);
+            alert.showAndWait().ifPresent(bt -> {
+                if (bt == yes) {
+                    if (timeline != null) timeline.stop();
+                    stage.setScene(homeScene);
+                }
+            });
         });
+        HBox bottom = new HBox(backButton); bottom.setAlignment(Pos.CENTER); bottom.setPadding(new Insets(6,0,8,0));
 
-        VBox playLayout = new VBox(10, gamePane, backButton);
-        playLayout.setAlignment(Pos.CENTER);
-        playScene = new Scene(playLayout, COLUMNS * CELL_SIZE + 40, ROWS * CELL_SIZE + 80);
+        // layout
+        BorderPane root = new BorderPane();
+        root.setTop(top);
+        root.setCenter(center);
+        root.setBottom(bottom);
 
-        stage.setTitle("Tetris Game");
+        playScene = new Scene(root, COLUMNS * CELL_SIZE + 160, ROWS * CELL_SIZE + 180);
+        stage.setTitle("Tetris");
         stage.setScene(playScene);
 
         spawnTetromino();
@@ -271,16 +273,32 @@ public class Main extends Application {
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
 
+        // pause toggle with P
+        final BooleanProperty paused = new SimpleBooleanProperty(false);
+
+        //Control
         playScene.setOnKeyPressed(e -> {
-            if (currentTetromino == null) return;
-            if (e.getCode() == KeyCode.LEFT) currentTetromino.move(-1, 0);
-            else if (e.getCode() == KeyCode.RIGHT) currentTetromino.move(1, 0);
-            else if (e.getCode() == KeyCode.DOWN) moveDown();
-            else if (e.getCode() == KeyCode.UP) currentTetromino.rotate();
+            if (e.getCode() == KeyCode.P) {
+                boolean p = !paused.get();
+                paused.set(p);
+                if (p) { timeline.pause(); pauseHint.setVisible(true); }
+                else   { timeline.play();  pauseHint.setVisible(false); }
+                return;
+            }
+            if (paused.get() || currentTetromino == null) return;
+
+            switch (e.getCode()) {
+                case LEFT  -> currentTetromino.move(-1, 0);
+                case RIGHT -> currentTetromino.move(1, 0);
+                case DOWN  -> moveDown();
+                case UP    -> currentTetromino.rotate();
+                default    -> {}
+            }
         });
 
-        gamePane.requestFocus();
+        playScene.getRoot().requestFocus();
     }
+
 
     private void drawGrid(GraphicsContext gc) {
         gc.setStroke(Color.LIGHTGRAY);
