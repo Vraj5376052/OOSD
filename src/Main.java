@@ -63,7 +63,7 @@ public class Main extends Application {
         title.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
 
         Button btnPlay = new Button("Play");
-        Button btnConfig = new Button("Configuration");
+        Button btnConfig = new Button("Configuration"); // fix typo
         Button btnHighScore = new Button("High Scores");
         Button btnExit = new Button("Exit");
 
@@ -112,8 +112,100 @@ public class Main extends Application {
 
 
     private void showPlayScreen(Stage stage) {
-        PlayScreen playScreen = new PlayScreen();
-        playScreen.showPlayScreen(primaryStage);
+        lockedBlocks.clear();
+
+        // game field
+        gamePane = new Pane();
+        gamePane.setPrefSize(COLUMNS * CELL_SIZE, ROWS * CELL_SIZE);
+        gamePane.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        gamePane.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        StackPane.setAlignment(gamePane, Pos.CENTER);
+
+        Canvas gridCanvas = new Canvas(COLUMNS * CELL_SIZE, ROWS * CELL_SIZE);
+        drawGrid(gridCanvas.getGraphicsContext2D());
+        gamePane.getChildren().add(gridCanvas);
+
+        // frame
+        Rectangle frame = new Rectangle(COLUMNS * CELL_SIZE + 2, ROWS * CELL_SIZE + 2);
+        frame.setFill(Color.TRANSPARENT);
+        frame.setStroke(Color.SILVER);
+
+        // pause label
+        Label pauseHint = new Label("Game is paused,\npress P to continue...");
+        pauseHint.setVisible(false);
+
+        // center game field + frame
+        StackPane center = new StackPane(new Group(frame), gamePane, pauseHint);
+        center.setPadding(new Insets(10));
+        center.setAlignment(Pos.CENTER);
+
+        StackPane.setAlignment(pauseHint, Pos.CENTER_LEFT);
+        StackPane.setMargin(pauseHint, new Insets(0, 0, 0, 20));
+
+        // top title
+        Label title = new Label("Play");
+        title.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
+        HBox top = new HBox(title); top.setAlignment(Pos.CENTER); top.setPadding(new Insets(8,0,4,0));
+
+        // back button with stop confirmation
+        Button backButton = new Button("Back");
+        backButton.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Stop Game");
+            alert.setHeaderText(null);
+            alert.setContentText("Are you sure to stop the current game?");
+            ButtonType no  = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+            ButtonType yes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
+            alert.getButtonTypes().setAll(no, yes);
+            alert.showAndWait().ifPresent(bt -> {
+                if (bt == yes) {
+                    if (timeline != null) timeline.stop();
+                    stage.setScene(homeScene);
+                }
+            });
+        });
+        HBox bottom = new HBox(backButton); bottom.setAlignment(Pos.CENTER); bottom.setPadding(new Insets(6,0,8,0));
+
+        // layout
+        BorderPane root = new BorderPane();
+        root.setTop(top);
+        root.setCenter(center);
+        root.setBottom(bottom);
+
+        playScene = new Scene(root, COLUMNS * CELL_SIZE + 160, ROWS * CELL_SIZE + 180);
+        stage.setTitle("Tetris");
+        stage.setScene(playScene);
+
+        spawnTetromino();
+
+        timeline = new Timeline(new KeyFrame(Duration.millis(500), e -> moveDown()));
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+
+        // pause toggle with P
+        final BooleanProperty paused = new SimpleBooleanProperty(false);
+
+        //Control
+        playScene.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.P) {
+                boolean p = !paused.get();
+                paused.set(p);
+                if (p) { timeline.pause(); pauseHint.setVisible(true); }
+                else   { timeline.play();  pauseHint.setVisible(false); }
+                return;
+            }
+            if (paused.get() || currentTetromino == null) return;
+
+            switch (e.getCode()) {
+                case LEFT  -> currentTetromino.move(-1, 0);
+                case RIGHT -> currentTetromino.move(1, 0);
+                case DOWN  -> moveDown();
+                case UP    -> currentTetromino.rotate();
+                default    -> {}
+            }
+        });
+
+        playScene.getRoot().requestFocus();
     }
 
 
