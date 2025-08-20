@@ -139,12 +139,5 @@ public class Configuration {
     }
 
 
-    // Add getters to retrieve updated values if needed
-//    public int getColumns() { return columns; }
-//    public int getRows() { return rows; }
-//    public int getLevel() { return level; }
-//    public boolean isMusic() { return music; }
-//    public boolean isSoundEffects() { return soundEffects; }
-//    public boolean isAiPlay() { return aiPlay; }
-//    public boolean isExtendMode() { return extendMode; }
+
 }
