@@ -37,7 +37,7 @@ public class Configuration {
 
     private void display(Stage stage, Runnable onBack) {
 
-        // Labels
+        // Labels (sin cambios de lógica)
         Label widthValue = new Label(String.valueOf(columns));
         Label heightValue = new Label(String.valueOf(rows));
         Label levelValue = new Label(String.valueOf(level));
@@ -46,7 +46,7 @@ public class Configuration {
         Label aiValue = new Label(aiPlay ? "On" : "Off");
         Label extendValue = new Label(extendMode ? "On" : "Off");
 
-        // Sliders
+        // Sliders (igual)
         Slider widthSlider = new Slider(5, 15, columns);
         widthSlider.setMajorTickUnit(1); widthSlider.setSnapToTicks(true);
         widthSlider.setShowTickMarks(true); widthSlider.setShowTickLabels(true);
@@ -62,7 +62,7 @@ public class Configuration {
         levelSlider.setShowTickMarks(true); levelSlider.setShowTickLabels(true);
         levelSlider.valueProperty().addListener((o,ov,nv)->{ level = nv.intValue(); levelValue.setText(""+level); });
 
-        // Checkboxes
+        // Checkboxes (igual)
         CheckBox musicCheck = new CheckBox(); musicCheck.setSelected(music);
         musicCheck.selectedProperty().addListener((o,ov,nv)->{ music = nv; musicValue.setText(nv?"On":"Off"); });
 
@@ -75,39 +75,69 @@ public class Configuration {
         CheckBox extendCheck = new CheckBox(); extendCheck.setSelected(extendMode);
         extendCheck.selectedProperty().addListener((o,ov,nv)->{ extendMode = nv; extendValue.setText(nv?"On":"Off"); });
 
-        // Grid
+        // Grid más centrado y con márgenes
         GridPane grid = new GridPane();
-        grid.setHgap(20); grid.setVgap(14); grid.setAlignment(Pos.CENTER);
-        ColumnConstraints c0 = new ColumnConstraints(); c0.setPrefWidth(220);
-        ColumnConstraints c1 = new ColumnConstraints(); c1.setPercentWidth(60);
-        ColumnConstraints c2 = new ColumnConstraints(); c2.setPrefWidth(60);
+        grid.setHgap(14);
+        grid.setVgap(10);
+        grid.setAlignment(Pos.CENTER);
+        grid.setPadding(new Insets(0, 12, 0, 12)); // separa del borde del popup
+
+        // Columnas por porcentaje (quita el ancho fijo grande)
+        ColumnConstraints c0 = new ColumnConstraints(); c0.setPercentWidth(40); // etiquetas
+        ColumnConstraints c1 = new ColumnConstraints(); c1.setPercentWidth(45); // sliders/checkbox
+        ColumnConstraints c2 = new ColumnConstraints(); c2.setPercentWidth(15); // valores
         grid.getColumnConstraints().addAll(c0, c1, c2);
 
-        grid.add(new Label("Field Width (No of cells):"), 0, 0); grid.add(widthSlider, 1, 0); grid.add(widthValue, 2, 0);
-        grid.add(new Label("Field Height (No of cells):"),0, 1); grid.add(heightSlider,1, 1); grid.add(heightValue,2, 1);
-        grid.add(new Label("Game Level:"),0, 2); grid.add(levelSlider,1, 2); grid.add(levelValue,2, 2);
+        // Fila por fila
+        Label lW = new Label("Field Width (No of cells):");
+        Label lH = new Label("Field Height (No of cells):");
+        Label lL = new Label("Game Level:");
+        Label lM = new Label("Music (On/Off):");
+        Label lS = new Label("Sound Effect (On/Off):");
+        Label lA = new Label("AI Play (On/Off):");
+        Label lE = new Label("Extend Mode (On/Off):");
 
-        grid.add(new Label("Music (On/Off):"),0, 3); grid.add(musicCheck,1, 3); grid.add(musicValue,2, 3);
-        grid.add(new Label("Sound Effect (On/Off):"),0, 4); grid.add(soundCheck,1, 4); grid.add(soundValue,2, 4);
-        grid.add(new Label("AI Play (On/Off):"),0, 5); grid.add(aiCheck,1, 5); grid.add(aiValue,2, 5);
-        grid.add(new Label("Extend Mode (On/Off):"),0, 6); grid.add(extendCheck,1,6); grid.add(extendValue,2,6);
+        grid.add(lW, 0, 0); grid.add(widthSlider, 1, 0); grid.add(widthValue, 2, 0);
+        grid.add(lH, 0, 1); grid.add(heightSlider,1, 1); grid.add(heightValue,2, 1);
+        grid.add(lL, 0, 2); grid.add(levelSlider, 1, 2); grid.add(levelValue, 2, 2);
+        grid.add(lM, 0, 3); grid.add(musicCheck,1, 3);   grid.add(musicValue, 2, 3);
+        grid.add(lS, 0, 4); grid.add(soundCheck,1, 4);   grid.add(soundValue, 2, 4);
+        grid.add(lA, 0, 5); grid.add(aiCheck,1, 5);      grid.add(aiValue, 2, 5);
+        grid.add(lE, 0, 6); grid.add(extendCheck,1,6);   grid.add(extendValue,2,6);
+
+        // Alinea etiquetas a la derecha para que queden más “al centro”
+        GridPane.setHalignment(lW, javafx.geometry.HPos.RIGHT);
+        GridPane.setHalignment(lH, javafx.geometry.HPos.RIGHT);
+        GridPane.setHalignment(lL, javafx.geometry.HPos.RIGHT);
+        GridPane.setHalignment(lM, javafx.geometry.HPos.RIGHT);
+        GridPane.setHalignment(lS, javafx.geometry.HPos.RIGHT);
+        GridPane.setHalignment(lA, javafx.geometry.HPos.RIGHT);
+        GridPane.setHalignment(lE, javafx.geometry.HPos.RIGHT);
 
         Label title = new Label("Configuration");
-        title.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
-        HBox top = new HBox(title); top.setAlignment(Pos.CENTER); top.setPadding(new Insets(10,0,10,0));
+        title.setFont(Font.font("SansSerif", FontWeight.BOLD, 20)); // un pelín más compacto
+        HBox top = new HBox(title);
+        top.setAlignment(Pos.CENTER);
+        top.setPadding(new Insets(8, 0, 8, 0));
 
         Button back = new Button("Back");
         back.setOnAction(e -> onBack.run());
-        HBox bottom = new HBox(back); bottom.setAlignment(Pos.CENTER); bottom.setPadding(new Insets(8,0,8,0));
+        HBox bottom = new HBox(back);
+        bottom.setAlignment(Pos.CENTER);
+        bottom.setPadding(new Insets(8, 0, 6, 0));
 
         BorderPane root = new BorderPane();
+        root.setPadding(new Insets(12, 18, 12, 18)); // margen general del popup
         root.setTop(top);
         root.setCenter(grid);
         root.setBottom(bottom);
 
         stage.setTitle("Tetris");
-        stage.setScene(new Scene(root, 640, 420));
+        // Popup un poco más pequeño
+        stage.setScene(new Scene(root, 560, 340));
+        stage.sizeToScene();
     }
+
 
     // Add getters to retrieve updated values if needed
 //    public int getColumns() { return columns; }
