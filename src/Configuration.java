@@ -24,8 +24,8 @@ public class Configuration {
     }
 
     private Configuration(int columns, int rows, int level,
-                         boolean music, boolean soundEffects,
-                         boolean aiPlay, boolean extendMode) {
+                          boolean music, boolean soundEffects,
+                          boolean aiPlay, boolean extendMode) {
         this.columns = columns;
         this.rows = rows;
         this.level = level;
