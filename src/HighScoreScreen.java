@@ -9,6 +9,9 @@ import javafx.scene.text.FontWeight;
 
 public class HighScoreScreen {
 
+    //record type usage
+    record ScoreEntry(String name, int score) { }
+
     private HighScoreScreen() { }
 
     public static Scene create(Runnable onBack) {
@@ -32,28 +35,28 @@ public class HighScoreScreen {
         grid.add(nameHeader, 0, 0);
         grid.add(scoreHeader, 1, 0);
 
-        // Sample data (kept from your original file)
-        String[][] data = {
-                {"Tom", "869613"},
-                {"Vraj", "754569"},
-                {"Anh", "642871"},
-                {"Jack", "549280"},
-                {"Luis", "537728"},
-                {"Tom", "462740"},
-                {"Vraj", "366765"},
-                {"Vraj", "326181"},
-                {"Luis", "301649"},
-                {"Jack", "260598"},
+        ScoreEntry[] data = {
+                new ScoreEntry("Tom", 869613),
+                new ScoreEntry("Vraj", 754569),
+                new ScoreEntry("Anh", 642871),
+                new ScoreEntry("Jack", 549280),
+                new ScoreEntry("Luis", 537728),
+                new ScoreEntry("Tom", 462740),
+                new ScoreEntry("Vraj", 366765),
+                new ScoreEntry("Vraj", 326181),
+                new ScoreEntry("Luis", 301649),
+                new ScoreEntry("Jack", 260598),
         };
 
         for (int i = 0; i < data.length; i++) {
-            Label name = new Label(data[i][0]);
+            Label name = new Label(data[i].name());
             name.setFont(Font.font("SansSerif", 14));
-            Label score = new Label(data[i][1]);
+            Label score = new Label(String.valueOf(data[i].score()));
             score.setFont(Font.font("SansSerif", 14));
             grid.add(name, 0, i + 1);
             grid.add(score, 1, i + 1);
         }
+
 
         root.getChildren().add(grid);
 
