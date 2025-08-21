@@ -63,14 +63,14 @@ public class PlayScreen {
         frame.setStroke(Color.SILVER);
 
         // pause label
-        Label pauseHint = new Label("Game is paused,\npress P to continue...");
+        Label pauseHint = new Label("Game is paused,\nPress 'P' to continue...");
         pauseHint.setVisible(false);
 
         StackPane center = new StackPane(new Group(frame), gamePane, pauseHint);
         center.setPadding(new Insets(10));
         center.setAlignment(Pos.CENTER);
 
-        StackPane.setAlignment(pauseHint, Pos.CENTER_LEFT);
+        StackPane.setAlignment(pauseHint, Pos.BASELINE_CENTER);
         StackPane.setMargin(pauseHint, new Insets(0, 0, 0, 20));
 
         // top title
@@ -80,7 +80,7 @@ public class PlayScreen {
         top.setAlignment(Pos.CENTER);
         top.setPadding(new Insets(8,0,4,0));
 
-        // back button
+        // back button with stop confirmation
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -119,6 +119,7 @@ public class PlayScreen {
 
         final BooleanProperty paused = new SimpleBooleanProperty(false);
 
+        //pause toggle with 'P' key
         playScene.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.P) {
                 boolean p = !paused.get();
@@ -129,6 +130,7 @@ public class PlayScreen {
             }
             if (paused.get() || currentTetromino == null) return;
 
+            //switch cases
             switch (e.getCode()) {
                 case LEFT  -> currentTetromino.move(-1, 0);
                 case RIGHT -> currentTetromino.move(1, 0);
@@ -284,13 +286,13 @@ public class PlayScreen {
 
     static class TetrominoShapes {
         private static final int[][][] SHAPES = {
-                {{0, 0}, {1, 0}, {-1, 0}, {0, 1}},   // T
-                {{0, 0}, {1, 0}, {0, 1}, {1, 1}},    // O
-                {{0, 0}, {1, 0}, {-1, 0}, {-1, 1}},  // L
-                {{0, 0}, {1, 0}, {-1, 0}, {1, 1}},   // J
-                {{0, 0}, {1, 0}, {0, 1}, {-1, 1}},   // S
-                {{0, 0}, {-1, 0}, {0, 1}, {1, 1}},   // Z
-                {{0, 0}, {-1, 0}, {1, 0}, {2, 0}}    // I
+                {{0, 0}, {1, 0}, {-1, 0}, {0, 1}},
+                {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
+                {{0, 0}, {1, 0}, {-1, 0}, {-1, 1}},
+                {{0, 0}, {1, 0}, {-1, 0}, {1, 1}},
+                {{0, 0}, {1, 0}, {0, 1}, {-1, 1}},
+                {{0, 0}, {-1, 0}, {0, 1}, {1, 1}},
+                {{0, 0}, {-1, 0}, {1, 0}, {2, 0}}
         };
 
         public static int[][] getRandomShape() {
