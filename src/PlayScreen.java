@@ -119,7 +119,7 @@ public class PlayScreen {
 
         final BooleanProperty paused = new SimpleBooleanProperty(false);
 
-        //pause toggle with 'P' key
+        //pause game with 'P' key
         playScene.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.P) {
                 boolean p = !paused.get();
@@ -207,6 +207,7 @@ public class PlayScreen {
         for (Rectangle r : toMoveDown) r.setY(r.getY() + CELL_SIZE);
     }
 
+    //tetromino blocks and all the possible cases of collision and movements
     class Tetromino {
         private Rectangle[] squares = new Rectangle[4];
         private int[][] shape;
