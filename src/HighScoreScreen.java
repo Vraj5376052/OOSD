@@ -35,6 +35,7 @@ public class HighScoreScreen {
         grid.add(nameHeader, 0, 0);
         grid.add(scoreHeader, 1, 0);
 
+        //record type usage in scores
         ScoreEntry[] data = {
                 new ScoreEntry("Tom", 869613),
                 new ScoreEntry("Vraj", 754569),

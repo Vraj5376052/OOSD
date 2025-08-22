@@ -37,7 +37,7 @@ public class Configuration {
 
     private void display(Stage stage, Runnable onBack) {
 
-        // Labels (sin cambios de lógica)
+        // Labels
         Label widthValue = new Label(String.valueOf(columns));
         Label heightValue = new Label(String.valueOf(rows));
         Label levelValue = new Label(String.valueOf(level));
@@ -46,7 +46,7 @@ public class Configuration {
         Label aiValue = new Label(aiPlay ? "On" : "Off");
         Label extendValue = new Label(extendMode ? "On" : "Off");
 
-        // Sliders (igual)
+        // Sliders
         Slider widthSlider = new Slider(5, 15, columns);
         widthSlider.setMajorTickUnit(1); widthSlider.setSnapToTicks(true);
         widthSlider.setShowTickMarks(true); widthSlider.setShowTickLabels(true);
@@ -62,7 +62,7 @@ public class Configuration {
         levelSlider.setShowTickMarks(true); levelSlider.setShowTickLabels(true);
         levelSlider.valueProperty().addListener((o,ov,nv)->{ level = nv.intValue(); levelValue.setText(""+level); });
 
-        // Checkboxes (igual)
+        // Checkboxes
         CheckBox musicCheck = new CheckBox(); musicCheck.setSelected(music);
         musicCheck.selectedProperty().addListener((o,ov,nv)->{ music = nv; musicValue.setText(nv?"On":"Off"); });
 
@@ -75,20 +75,20 @@ public class Configuration {
         CheckBox extendCheck = new CheckBox(); extendCheck.setSelected(extendMode);
         extendCheck.selectedProperty().addListener((o,ov,nv)->{ extendMode = nv; extendValue.setText(nv?"On":"Off"); });
 
-        // Grid más centrado y con márgenes
+        // Grid
         GridPane grid = new GridPane();
         grid.setHgap(14);
         grid.setVgap(10);
         grid.setAlignment(Pos.CENTER);
         grid.setPadding(new Insets(0, 12, 0, 12)); // separa del borde del popup
 
-        // Columnas por porcentaje (quita el ancho fijo grande)
+        // Columns
         ColumnConstraints c0 = new ColumnConstraints(); c0.setPercentWidth(40); // etiquetas
         ColumnConstraints c1 = new ColumnConstraints(); c1.setPercentWidth(45); // sliders/checkbox
         ColumnConstraints c2 = new ColumnConstraints(); c2.setPercentWidth(15); // valores
         grid.getColumnConstraints().addAll(c0, c1, c2);
 
-        // Fila por fila
+
         Label lW = new Label("Field Width (No of cells):");
         Label lH = new Label("Field Height (No of cells):");
         Label lL = new Label("Game Level:");
@@ -105,7 +105,7 @@ public class Configuration {
         grid.add(lA, 0, 5); grid.add(aiCheck,1, 5);      grid.add(aiValue, 2, 5);
         grid.add(lE, 0, 6); grid.add(extendCheck,1,6);   grid.add(extendValue,2,6);
 
-        // Alinea etiquetas a la derecha para que queden más “al centro”
+
         GridPane.setHalignment(lW, javafx.geometry.HPos.RIGHT);
         GridPane.setHalignment(lH, javafx.geometry.HPos.RIGHT);
         GridPane.setHalignment(lL, javafx.geometry.HPos.RIGHT);
@@ -115,7 +115,7 @@ public class Configuration {
         GridPane.setHalignment(lE, javafx.geometry.HPos.RIGHT);
 
         Label title = new Label("Configuration");
-        title.setFont(Font.font("SansSerif", FontWeight.BOLD, 20)); // un pelín más compacto
+        title.setFont(Font.font("SansSerif", FontWeight.BOLD, 20));
         HBox top = new HBox(title);
         top.setAlignment(Pos.CENTER);
         top.setPadding(new Insets(8, 0, 8, 0));
@@ -127,13 +127,13 @@ public class Configuration {
         bottom.setPadding(new Insets(8, 0, 6, 0));
 
         BorderPane root = new BorderPane();
-        root.setPadding(new Insets(12, 18, 12, 18)); // margen general del popup
+        root.setPadding(new Insets(12, 18, 12, 18));
         root.setTop(top);
         root.setCenter(grid);
         root.setBottom(bottom);
 
         stage.setTitle("Tetris");
-        // Popup un poco más pequeño
+
         stage.setScene(new Scene(root, 560, 340));
         stage.sizeToScene();
     }
