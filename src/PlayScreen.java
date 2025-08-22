@@ -86,7 +86,7 @@ public class PlayScreen {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Stop Game");
             alert.setHeaderText(null);
-            alert.setContentText("Are you sure to stop the current game?");
+            alert.setContentText("Stop Game?");
             ButtonType no  = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
             ButtonType yes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
             alert.getButtonTypes().setAll(no, yes);
