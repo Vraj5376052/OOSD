@@ -302,10 +302,9 @@ public class PlayScreen {
         });
 
         alert.showAndWait();
-        // Stay on play screen, no reset
     }
 
-    // ========= Inner classes =========
+    //Inner classes
     class Tetromino {
         private Rectangle[] squares = new Rectangle[4];
         private int[][] shape;
