@@ -35,27 +35,16 @@ public class HighScoreScreen {
         grid.add(nameHeader, 0, 0);
         grid.add(scoreHeader, 1, 0);
 
-        //record type usage in scores
-        ScoreEntry[] data = {
-                new ScoreEntry("Tom", 869613),
-                new ScoreEntry("Vraj", 754569),
-                new ScoreEntry("Anh", 642871),
-                new ScoreEntry("Jack", 549280),
-                new ScoreEntry("Luis", 537728),
-                new ScoreEntry("Tom", 462740),
-                new ScoreEntry("Vraj", 366765),
-                new ScoreEntry("Vraj", 326181),
-                new ScoreEntry("Luis", 301649),
-                new ScoreEntry("Jack", 260598),
-        };
+        //update Score entry
+        ScoreManager.load();
 
-        for (int i = 0; i < data.length; i++) {
-            Label name = new Label(data[i].name());
-            name.setFont(Font.font("SansSerif", 14));
-            Label score = new Label(String.valueOf(data[i].score()));
-            score.setFont(Font.font("SansSerif", 14));
-            grid.add(name, 0, i + 1);
-            grid.add(score, 1, i + 1);
+        int row = 1;
+        for (ScoreManager.ScoreEntry entry : ScoreManager.getScores()) {
+            Label name = new Label(entry.name());
+            Label score = new Label(String.valueOf(entry.score()));
+            grid.add(name, 0, row);
+            grid.add(score, 1, row);
+            row++;
         }
 
 
