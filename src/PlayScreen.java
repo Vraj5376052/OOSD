@@ -1,5 +1,6 @@
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
@@ -8,12 +9,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBar;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -42,10 +38,12 @@ public class PlayScreen {
     private int score = 0;
     private int totalLines = 0;
 
-    // UI labels
     private Label scoreLabel;
     private Label linesLabel;
     private Canvas nextPreview;
+
+    private boolean aiEnabled;
+    private TetrisAI ai;
 
     public PlayScreen(int columns, int rows, int cellSize) {
         this.COLUMNS = columns;
@@ -53,90 +51,89 @@ public class PlayScreen {
         this.CELL_SIZE = cellSize;
     }
 
-    public void show(Stage stage, Runnable onBack) {
+    public int getColumns() { return COLUMNS; }
+    public int getRows() { return ROWS; }
+    public int getCellSize() { return CELL_SIZE; }
+    public List<Rectangle> getLockedBlocks() { return lockedBlocks; }
+    public Scene getScene() { return playScene; }
+
+    public int[][] getBoard() {
+        int[][] board = new int[ROWS][COLUMNS];
+        for (Rectangle r : lockedBlocks) {
+            int row = (int) (r.getY() / CELL_SIZE);
+            int col = (int) (r.getX() / CELL_SIZE);
+            if (row >= 0 && row < ROWS && col >= 0 && col < COLUMNS)
+                board[row][col] = 1;
+        }
+        return board;
+    }
+
+    public void show(Stage stage, Runnable onBack, boolean aiPlay) {
+        this.aiEnabled = aiPlay;
+        if (aiPlay) {
+            ai = new TetrisAI(this);
+            ai.start();
+        }
+
         lockedBlocks.clear();
         score = 0;
         totalLines = 0;
 
-        // game field
         gamePane = new Pane();
         gamePane.setPrefSize(COLUMNS * CELL_SIZE, ROWS * CELL_SIZE);
-        gamePane.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        gamePane.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        StackPane.setAlignment(gamePane, Pos.CENTER);
 
         Canvas gridCanvas = new Canvas(COLUMNS * CELL_SIZE, ROWS * CELL_SIZE);
         drawGrid(gridCanvas.getGraphicsContext2D());
         gamePane.getChildren().add(gridCanvas);
 
-        // frame
         Rectangle frame = new Rectangle(COLUMNS * CELL_SIZE + 2, ROWS * CELL_SIZE + 2);
         frame.setFill(Color.TRANSPARENT);
         frame.setStroke(Color.SILVER);
 
-        // pause label
         Label pauseHint = new Label("Game is paused,\nPress 'P' to continue...");
         pauseHint.setVisible(false);
 
         StackPane playArea = new StackPane(new Group(frame), gamePane, pauseHint);
         playArea.setPadding(new Insets(10));
         playArea.setAlignment(Pos.CENTER);
-        StackPane.setAlignment(pauseHint, Pos.BASELINE_CENTER);
-        StackPane.setMargin(pauseHint, new Insets(0, 0, 0, 20));
 
-        // info panel (left side)
         VBox infoBox = new VBox(10);
         infoBox.setPadding(new Insets(10));
         infoBox.setAlignment(Pos.TOP_LEFT);
 
-        Label infoTitle = new Label("Game Info (Player 1)");
-        Label playerType = new Label("Player Type: Human");
-        Label initLevel = new Label("Initial Level: 1");
-        Label currLevel = new Label("Current Level: 1");
+        Label infoTitle = new Label("Game Info");
+        Label playerType = new Label("Player Type: " + (aiPlay ? "AI" : "Human"));
         linesLabel = new Label("Lines Erased: 0");
         scoreLabel = new Label("Score: 0");
         Label nextLabel = new Label("Next Tetromino:");
-
         nextPreview = new Canvas(80, 80);
 
-        infoBox.getChildren().addAll(
-                infoTitle, playerType, initLevel, currLevel,
-                linesLabel, scoreLabel, nextLabel, nextPreview
-        );
+        infoBox.getChildren().addAll(infoTitle, playerType, linesLabel, scoreLabel, nextLabel, nextPreview);
 
-        // combine info + play area
         HBox center = new HBox(20, infoBox, playArea);
         center.setAlignment(Pos.CENTER);
 
-        // top title
         Label title = new Label("Play");
         title.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
         HBox top = new HBox(title);
         top.setAlignment(Pos.CENTER);
         top.setPadding(new Insets(8, 0, 4, 0));
 
-        // back button with stop confirmation
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Stop Game");
-            alert.setHeaderText(null);
-            alert.setContentText("Stop Game?");
-            ButtonType no = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
-            ButtonType yes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
-            alert.getButtonTypes().setAll(no, yes);
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Stop Game?", ButtonType.YES, ButtonType.NO);
             alert.showAndWait().ifPresent(bt -> {
-                if (bt == yes) {
+                if (bt == ButtonType.YES) {
                     if (timeline != null) timeline.stop();
                     onBack.run();
                 }
             });
         });
+
         HBox bottom = new HBox(backButton);
         bottom.setAlignment(Pos.CENTER);
         bottom.setPadding(new Insets(6, 0, 8, 0));
 
-        // layout
         BorderPane root = new BorderPane();
         root.setTop(top);
         root.setCenter(center);
@@ -153,31 +150,20 @@ public class PlayScreen {
         timeline.play();
 
         final BooleanProperty paused = new SimpleBooleanProperty(false);
-
-        //pause game with 'P' key
         playScene.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.P) {
                 boolean p = !paused.get();
                 paused.set(p);
-                if (p) {
-                    timeline.pause();
-                    pauseHint.setVisible(true);
-                } else {
-                    timeline.play();
-                    pauseHint.setVisible(false);
-                }
+                if (p) timeline.pause(); else timeline.play();
+                pauseHint.setVisible(p);
                 return;
             }
-            if (paused.get() || currentTetromino == null) return;
-
-            //switch cases
+            if (paused.get() || currentTetromino == null || aiEnabled) return;
             switch (e.getCode()) {
                 case LEFT -> currentTetromino.move(-1, 0);
                 case RIGHT -> currentTetromino.move(1, 0);
                 case DOWN -> moveDown();
                 case UP -> currentTetromino.rotate();
-                default -> {
-                }
             }
         });
 
@@ -187,13 +173,11 @@ public class PlayScreen {
     private void drawGrid(GraphicsContext gc) {
         gc.setStroke(Color.LIGHTGRAY);
         gc.setLineWidth(1);
-        for (int x = 0; x <= COLUMNS * CELL_SIZE; x += CELL_SIZE)
-            gc.strokeLine(x, 0, x, ROWS * CELL_SIZE);
-        for (int y = 0; y <= ROWS * CELL_SIZE; y += CELL_SIZE)
-            gc.strokeLine(0, y, COLUMNS * CELL_SIZE, y);
+        for (int x = 0; x <= COLUMNS * CELL_SIZE; x += CELL_SIZE) gc.strokeLine(x, 0, x, ROWS * CELL_SIZE);
+        for (int y = 0; y <= ROWS * CELL_SIZE; y += CELL_SIZE) gc.strokeLine(0, y, COLUMNS * CELL_SIZE, y);
     }
 
-    private void moveDown() {
+    public void moveDown() {
         if (currentTetromino != null) {
             boolean moved = currentTetromino.move(0, 1);
             if (!moved) {
@@ -223,14 +207,13 @@ public class PlayScreen {
         GraphicsContext gc = nextPreview.getGraphicsContext2D();
         gc.clearRect(0, 0, 80, 80);
         gc.setFill(Color.GRAY);
-        for (int[] cell : nextTetromino.shape) {
+        for (int[] cell : nextTetromino.getShape()) {
             gc.fillRect((cell[0] + 2) * 15, (cell[1] + 2) * 15, 15, 15);
         }
     }
 
     private void clearFullLines() {
         int linesCleared = 0;
-
         for (int row = ROWS - 1; row >= 0; row--) {
             int blocksInRow = 0;
             for (int col = 0; col < COLUMNS; col++) {
@@ -238,10 +221,7 @@ public class PlayScreen {
                 for (Rectangle r : lockedBlocks) {
                     int blockRow = (int) (r.getY() / CELL_SIZE);
                     int blockCol = (int) (r.getX() / CELL_SIZE);
-                    if (blockRow == row && blockCol == col) {
-                        blockFound = true;
-                        break;
-                    }
+                    if (blockRow == row && blockCol == col) { blockFound = true; break; }
                 }
                 if (blockFound) blocksInRow++;
             }
@@ -251,17 +231,11 @@ public class PlayScreen {
                 linesCleared++;
             }
         }
-
         if (linesCleared > 0) {
             totalLines += linesCleared;
             score += switch (linesCleared) {
-                case 1 -> 100;
-                case 2 -> 300;
-                case 3 -> 600;
-                case 4 -> 1000;
-                default -> 0;
+                case 1 -> 150; case 2 -> 300; case 3 -> 400; case 4 -> 500; default -> 0;
             };
-
             linesLabel.setText("Lines Erased: " + totalLines);
             scoreLabel.setText("Score: " + score);
         }
@@ -270,42 +244,31 @@ public class PlayScreen {
     private void removeRow(int rowToRemove) {
         List<Rectangle> toRemove = new ArrayList<>();
         List<Rectangle> toMoveDown = new ArrayList<>();
-
         for (Rectangle r : lockedBlocks) {
             int blockRow = (int) (r.getY() / CELL_SIZE);
             if (blockRow == rowToRemove) toRemove.add(r);
             else if (blockRow < rowToRemove) toMoveDown.add(r);
         }
-
-        for (Rectangle r : toRemove) {
-            gamePane.getChildren().remove(r);
-            lockedBlocks.remove(r);
-        }
-
+        for (Rectangle r : toRemove) { gamePane.getChildren().remove(r); lockedBlocks.remove(r); }
         for (Rectangle r : toMoveDown) r.setY(r.getY() + CELL_SIZE);
     }
 
     private void gameOver() {
         timeline.stop();
-
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Game Over");
         alert.setHeaderText("Your score: " + score);
-
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("High Score");
         dialog.setHeaderText("Enter your name:");
         dialog.setContentText("Name:");
-
-        dialog.showAndWait().ifPresent(name -> {
-            ScoreManager.add(name, score);
-        });
-
+        dialog.showAndWait().ifPresent(name -> ScoreManager.add(name, score));
         alert.showAndWait();
     }
 
-    //Inner classes
-    class Tetromino {
+    public Tetromino getCurrentTetromino() { return currentTetromino; }
+
+    public class Tetromino {
         private Rectangle[] squares = new Rectangle[4];
         private int[][] shape;
         private int x = COLUMNS / 2 - 1;
@@ -323,23 +286,14 @@ public class PlayScreen {
         }
 
         boolean move(int dx, int dy) {
-            x += dx;
-            y += dy;
-            if (isOutOfBounds() || isColliding()) {
-                x -= dx;
-                y -= dy;
-                return false;
-            }
-            updatePositions();
-            return true;
+            x += dx; y += dy;
+            if (isOutOfBounds() || isColliding()) { x -= dx; y -= dy; return false; }
+            updatePositions(); return true;
         }
 
         void rotate() {
             int[][] rotated = new int[4][2];
-            for (int i = 0; i < 4; i++) {
-                rotated[i][0] = -shape[i][1];
-                rotated[i][1] = shape[i][0];
-            }
+            for (int i = 0; i < 4; i++) { rotated[i][0] = -shape[i][1]; rotated[i][1] = shape[i][0]; }
             int[][] original = shape;
             shape = rotated;
             if (isOutOfBounds() || isColliding()) shape = original;
@@ -355,8 +309,7 @@ public class PlayScreen {
 
         boolean isOutOfBounds() {
             for (int i = 0; i < 4; i++) {
-                int newX = x + shape[i][0];
-                int newY = y + shape[i][1];
+                int newX = x + shape[i][0]; int newY = y + shape[i][1];
                 if (newX < 0 || newX >= COLUMNS || newY >= ROWS || newY < 0) return true;
             }
             return false;
@@ -380,17 +333,33 @@ public class PlayScreen {
             for (Rectangle r : squares) list.add(r);
             return list;
         }
+
+        public int getX() { return x; }
+        public int getY() { return y; }
+        public int[][] getShape() { return shape; }
+
+        public Tetromino cloneTetromino() {
+            Tetromino copy = new Tetromino();
+            copy.x = this.x;
+            copy.y = this.y;
+            copy.shape = new int[4][2];
+            for (int i = 0; i < 4; i++) {
+                copy.shape[i][0] = this.shape[i][0];
+                copy.shape[i][1] = this.shape[i][1];
+            }
+            return copy;
+        }
     }
 
     static class TetrominoShapes {
         private static final int[][][] SHAPES = {
-                {{0, 0}, {1, 0}, {-1, 0}, {0, 1}},
-                {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
-                {{0, 0}, {1, 0}, {-1, 0}, {-1, 1}},
-                {{0, 0}, {1, 0}, {-1, 0}, {1, 1}},
-                {{0, 0}, {1, 0}, {0, 1}, {-1, 1}},
-                {{0, 0}, {-1, 0}, {0, 1}, {1, 1}},
-                {{0, 0}, {-1, 0}, {1, 0}, {2, 0}}
+                {{0,0},{1,0},{-1,0},{0,1}}, // T-shape
+                {{0,0},{1,0},{0,1},{1,1}},  // O-shape
+                {{0,0},{1,0},{-1,0},{-1,1}}, // L
+                {{0,0},{1,0},{-1,0},{1,1}}, // J
+                {{0,0},{1,0},{0,1},{-1,1}}, // S
+                {{0,0},{-1,0},{0,1},{1,1}}, // Z
+                {{0,0},{-1,0},{1,0},{2,0}} // I
         };
 
         public static int[][] getRandomShape() {
