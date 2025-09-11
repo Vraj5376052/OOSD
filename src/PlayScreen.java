@@ -13,6 +13,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -34,8 +35,17 @@ public class PlayScreen {
     private Pane gamePane;
     private Timeline timeline;
     private Tetromino currentTetromino;
+    private Tetromino nextTetromino;
     private List<Rectangle> lockedBlocks = new ArrayList<>();
     private Scene playScene;
+
+    private int score = 0;
+    private int totalLines = 0;
+
+    // UI labels
+    private Label scoreLabel;
+    private Label linesLabel;
+    private Canvas nextPreview;
 
     public PlayScreen(int columns, int rows, int cellSize) {
         this.COLUMNS = columns;
@@ -45,6 +55,8 @@ public class PlayScreen {
 
     public void show(Stage stage, Runnable onBack) {
         lockedBlocks.clear();
+        score = 0;
+        totalLines = 0;
 
         // game field
         gamePane = new Pane();
@@ -66,19 +78,42 @@ public class PlayScreen {
         Label pauseHint = new Label("Game is paused,\nPress 'P' to continue...");
         pauseHint.setVisible(false);
 
-        StackPane center = new StackPane(new Group(frame), gamePane, pauseHint);
-        center.setPadding(new Insets(10));
-        center.setAlignment(Pos.CENTER);
-
+        StackPane playArea = new StackPane(new Group(frame), gamePane, pauseHint);
+        playArea.setPadding(new Insets(10));
+        playArea.setAlignment(Pos.CENTER);
         StackPane.setAlignment(pauseHint, Pos.BASELINE_CENTER);
         StackPane.setMargin(pauseHint, new Insets(0, 0, 0, 20));
+
+        // info panel (left side)
+        VBox infoBox = new VBox(10);
+        infoBox.setPadding(new Insets(10));
+        infoBox.setAlignment(Pos.TOP_LEFT);
+
+        Label infoTitle = new Label("Game Info (Player 1)");
+        Label playerType = new Label("Player Type: Human");
+        Label initLevel = new Label("Initial Level: 1");
+        Label currLevel = new Label("Current Level: 1");
+        linesLabel = new Label("Lines Erased: 0");
+        scoreLabel = new Label("Score: 0");
+        Label nextLabel = new Label("Next Tetromino:");
+
+        nextPreview = new Canvas(80, 80);
+
+        infoBox.getChildren().addAll(
+                infoTitle, playerType, initLevel, currLevel,
+                linesLabel, scoreLabel, nextLabel, nextPreview
+        );
+
+        // combine info + play area
+        HBox center = new HBox(20, infoBox, playArea);
+        center.setAlignment(Pos.CENTER);
 
         // top title
         Label title = new Label("Play");
         title.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
         HBox top = new HBox(title);
         top.setAlignment(Pos.CENTER);
-        top.setPadding(new Insets(8,0,4,0));
+        top.setPadding(new Insets(8, 0, 4, 0));
 
         // back button with stop confirmation
         Button backButton = new Button("Back");
@@ -86,8 +121,8 @@ public class PlayScreen {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Stop Game");
             alert.setHeaderText(null);
-            alert.setContentText("Are you sure to stop the current game?");
-            ButtonType no  = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+            alert.setContentText("Stop Game?");
+            ButtonType no = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
             ButtonType yes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
             alert.getButtonTypes().setAll(no, yes);
             alert.showAndWait().ifPresent(bt -> {
@@ -99,7 +134,7 @@ public class PlayScreen {
         });
         HBox bottom = new HBox(backButton);
         bottom.setAlignment(Pos.CENTER);
-        bottom.setPadding(new Insets(6,0,8,0));
+        bottom.setPadding(new Insets(6, 0, 8, 0));
 
         // layout
         BorderPane root = new BorderPane();
@@ -107,7 +142,7 @@ public class PlayScreen {
         root.setCenter(center);
         root.setBottom(bottom);
 
-        playScene = new Scene(root, COLUMNS * CELL_SIZE + 160, ROWS * CELL_SIZE + 180);
+        playScene = new Scene(root, COLUMNS * CELL_SIZE + 250, ROWS * CELL_SIZE + 180);
         stage.setTitle("Tetris");
         stage.setScene(playScene);
 
@@ -119,24 +154,30 @@ public class PlayScreen {
 
         final BooleanProperty paused = new SimpleBooleanProperty(false);
 
-        //pause toggle with 'P' key
+        //pause game with 'P' key
         playScene.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.P) {
                 boolean p = !paused.get();
                 paused.set(p);
-                if (p) { timeline.pause(); pauseHint.setVisible(true); }
-                else   { timeline.play();  pauseHint.setVisible(false); }
+                if (p) {
+                    timeline.pause();
+                    pauseHint.setVisible(true);
+                } else {
+                    timeline.play();
+                    pauseHint.setVisible(false);
+                }
                 return;
             }
             if (paused.get() || currentTetromino == null) return;
 
             //switch cases
             switch (e.getCode()) {
-                case LEFT  -> currentTetromino.move(-1, 0);
+                case LEFT -> currentTetromino.move(-1, 0);
                 case RIGHT -> currentTetromino.move(1, 0);
-                case DOWN  -> moveDown();
-                case UP    -> currentTetromino.rotate();
-                default    -> {}
+                case DOWN -> moveDown();
+                case UP -> currentTetromino.rotate();
+                default -> {
+                }
             }
         });
 
@@ -146,8 +187,10 @@ public class PlayScreen {
     private void drawGrid(GraphicsContext gc) {
         gc.setStroke(Color.LIGHTGRAY);
         gc.setLineWidth(1);
-        for (int x = 0; x <= COLUMNS * CELL_SIZE; x += CELL_SIZE) gc.strokeLine(x, 0, x, ROWS * CELL_SIZE);
-        for (int y = 0; y <= ROWS * CELL_SIZE; y += CELL_SIZE) gc.strokeLine(0, y, COLUMNS * CELL_SIZE, y);
+        for (int x = 0; x <= COLUMNS * CELL_SIZE; x += CELL_SIZE)
+            gc.strokeLine(x, 0, x, ROWS * CELL_SIZE);
+        for (int y = 0; y <= ROWS * CELL_SIZE; y += CELL_SIZE)
+            gc.strokeLine(0, y, COLUMNS * CELL_SIZE, y);
     }
 
     private void moveDown() {
@@ -163,11 +206,31 @@ public class PlayScreen {
     }
 
     private void spawnTetromino() {
-        currentTetromino = new Tetromino();
+        if (nextTetromino == null) nextTetromino = new Tetromino();
+        currentTetromino = nextTetromino;
+
+        if (currentTetromino.isColliding()) {
+            gameOver();
+            return;
+        }
+
         gamePane.getChildren().addAll(currentTetromino.getBlocks());
+        nextTetromino = new Tetromino();
+        drawNextPreview();
+    }
+
+    private void drawNextPreview() {
+        GraphicsContext gc = nextPreview.getGraphicsContext2D();
+        gc.clearRect(0, 0, 80, 80);
+        gc.setFill(Color.GRAY);
+        for (int[] cell : nextTetromino.shape) {
+            gc.fillRect((cell[0] + 2) * 15, (cell[1] + 2) * 15, 15, 15);
+        }
     }
 
     private void clearFullLines() {
+        int linesCleared = 0;
+
         for (int row = ROWS - 1; row >= 0; row--) {
             int blocksInRow = 0;
             for (int col = 0; col < COLUMNS; col++) {
@@ -185,7 +248,22 @@ public class PlayScreen {
             if (blocksInRow == COLUMNS) {
                 removeRow(row);
                 row++;
+                linesCleared++;
             }
+        }
+
+        if (linesCleared > 0) {
+            totalLines += linesCleared;
+            score += switch (linesCleared) {
+                case 1 -> 100;
+                case 2 -> 300;
+                case 3 -> 600;
+                case 4 -> 1000;
+                default -> 0;
+            };
+
+            linesLabel.setText("Lines Erased: " + totalLines);
+            scoreLabel.setText("Score: " + score);
         }
     }
 
@@ -207,6 +285,26 @@ public class PlayScreen {
         for (Rectangle r : toMoveDown) r.setY(r.getY() + CELL_SIZE);
     }
 
+    private void gameOver() {
+        timeline.stop();
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Game Over");
+        alert.setHeaderText("Your score: " + score);
+
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("High Score");
+        dialog.setHeaderText("Enter your name:");
+        dialog.setContentText("Name:");
+
+        dialog.showAndWait().ifPresent(name -> {
+            ScoreManager.add(name, score);
+        });
+
+        alert.showAndWait();
+    }
+
+    //Inner classes
     class Tetromino {
         private Rectangle[] squares = new Rectangle[4];
         private int[][] shape;

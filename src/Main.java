@@ -14,11 +14,11 @@ public class Main extends Application {
     private static final int CELL_SIZE = 30;
     private static int COLUMNS = 10;
     private static int ROWS = 20;
-    private int LEVEL = 5;
-    private boolean MUSIC = false;
-    private boolean SOUND_EFFECTS = false;
-    private boolean AI_PLAY = false;
-    private boolean EXTEND_MODE = false;
+    private static int LEVEL = 5;
+    private static boolean MUSIC = false;
+    private static boolean SOUND_EFFECTS = false;
+    private static boolean AI_PLAY = false;
+    private static boolean EXTEND_MODE = false;
 
     private Scene homeScene;
 
@@ -69,8 +69,7 @@ public class Main extends Application {
     }
 
     private void showConfigScreen(Stage stage) {
-        Configuration.show(stage, () -> stage.setScene(homeScene),
-                COLUMNS, ROWS, LEVEL, MUSIC, SOUND_EFFECTS, AI_PLAY, EXTEND_MODE);
+        Configuration.show(stage, () -> stage.setScene(homeScene));
     }
 
     private void showHighScoreScreen(Stage stage) {
@@ -78,6 +77,28 @@ public class Main extends Application {
         stage.setTitle("High Scores");
         stage.setScene(scene);
     }
+
+    // ===== Static Getters & Setters for Configuration =====
+    public static int getColumns() { return COLUMNS; }
+    public static void setColumns(int columns) { COLUMNS = columns; }
+
+    public static int getRows() { return ROWS; }
+    public static void setRows(int rows) { ROWS = rows; }
+
+    public static int getLEVEL() { return LEVEL; }
+    public static void setLEVEL(int level) { LEVEL = level; }
+
+    public static boolean isMUSIC() { return MUSIC; }
+    public static void setMUSIC(boolean music) { MUSIC = music; }
+
+    public static boolean isSOUND_EFFECTS() { return SOUND_EFFECTS; }
+    public static void setSOUND_EFFECTS(boolean sound) { SOUND_EFFECTS = sound; }
+
+    public static boolean isAI_PLAY() { return AI_PLAY; }
+    public static void setAI_PLAY(boolean ai) { AI_PLAY = ai; }
+
+    public static boolean isEXTEND_MODE() { return EXTEND_MODE; }
+    public static void setEXTEND_MODE(boolean extend) { EXTEND_MODE = extend; }
 
     public static void main(String[] args) {
         launch(args);
