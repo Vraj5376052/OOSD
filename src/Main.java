@@ -1,4 +1,5 @@
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -7,7 +8,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
-import javafx.application.Platform;
 
 public class Main extends Application {
 
@@ -42,7 +42,8 @@ public class Main extends Application {
 
         btnPlay.setOnAction(e -> {
             PlayScreen playScreen = new PlayScreen(COLUMNS, ROWS, CELL_SIZE);
-            playScreen.show(primaryStage, () -> primaryStage.setScene(homeScene));
+            // Pass AI_PLAY boolean to PlayScreen.show
+            playScreen.show(primaryStage, () -> primaryStage.setScene(homeScene), AI_PLAY);
         });
 
         btnConfig.setOnAction(e -> showConfigScreen(primaryStage));
