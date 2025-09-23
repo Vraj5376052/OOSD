@@ -15,8 +15,8 @@ public class Main extends Application {
     private static int COLUMNS = 10;
     private static int ROWS = 20;
     private static int LEVEL = 5;
-    private static boolean MUSIC = false;
-    private static boolean SOUND_EFFECTS = false;
+    private static boolean MUSIC = true;
+    private static boolean SOUND_EFFECTS = true;
     private static boolean AI_PLAY = false;
     private static boolean EXTEND_MODE = false;
 
@@ -30,6 +30,10 @@ public class Main extends Application {
     private void showMainMenu(Stage primaryStage) {
         Label title = new Label("Main Menu");
         title.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
+
+        AudioManager.initialize();
+        AudioManager.playBackgroundMusic();
+
 
         Button btnPlay = new Button("Play");
         Button btnConfig = new Button("Configuration");

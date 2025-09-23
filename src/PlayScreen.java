@@ -181,6 +181,7 @@ public class PlayScreen {
         if (currentTetromino != null) {
             boolean moved = currentTetromino.move(0, 1);
             if (!moved) {
+                AudioManager.playPieceFallSound();
                 lockedBlocks.addAll(currentTetromino.getBlocks());
                 currentTetromino = null;
                 clearFullLines();

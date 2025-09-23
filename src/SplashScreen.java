@@ -23,7 +23,7 @@ public class SplashScreen {
         splashStage.show();
         splashStage.centerOnScreen();
 
-        PauseTransition delay = new PauseTransition(Duration.seconds(3));
+        PauseTransition delay = new PauseTransition(Duration.seconds(1));
         delay.setOnFinished(event -> {
             splashStage.close();
             Platform.runLater(onFinished);
