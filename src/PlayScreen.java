@@ -230,6 +230,7 @@ public class PlayScreen {
                 removeRow(row);
                 row++;
                 linesCleared++;
+                AudioManager.playLineSound();
             }
         }
         if (linesCleared > 0) {
