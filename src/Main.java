@@ -18,6 +18,7 @@ public class Main extends Application {
     private static boolean MUSIC = true;
     private static boolean SOUND_EFFECTS = true;
     private static boolean AI_PLAY = false;
+    private static boolean EXTERNAL_PLAY = false;
     private static boolean EXTEND_MODE = false;
 
     private Scene homeScene;
@@ -101,6 +102,9 @@ public class Main extends Application {
 
     public static boolean isAI_PLAY() { return AI_PLAY; }
     public static void setAI_PLAY(boolean ai) { AI_PLAY = ai; }
+
+    public static boolean isEXTERNAL_PLAY() { return EXTERNAL_PLAY; }
+    public static void setEXTERNAL_PLAY(boolean ext) { EXTERNAL_PLAY = ext; }
 
     public static boolean isEXTEND_MODE() { return EXTEND_MODE; }
     public static void setEXTEND_MODE(boolean extend) { EXTEND_MODE = extend; }

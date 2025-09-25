@@ -112,14 +112,14 @@ public class Configuration {
         grid.add(aiCheck, 1, 5);
         grid.add(aiValue, 2, 5);
 
-        grid.add(new Label("Extend Mode:"), 0, 6);
+        grid.add(new Label("External Player:"), 0, 6);
         grid.add(extendCheck, 1, 6);
         grid.add(extendValue, 2, 6);
 
         // Back button
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> onBack.run());
-        grid.add(backButton, 0, 7, 3, 1);
+        grid.add(backButton, 0, 8, 3, 1);
         GridPane.setHalignment(backButton, javafx.geometry.HPos.CENTER);
 
         // Title
