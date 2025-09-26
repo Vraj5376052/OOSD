@@ -37,13 +37,15 @@ public class Main extends Application {
 
 
         Button btnPlay = new Button("Play");
+        Button btnTwoPlayer = new Button("Two Player Mode");
         Button btnConfig = new Button("Configuration");
         Button btnHighScore = new Button("High Scores");
         Button btnExit = new Button("Exit");
 
-        for (Button b : new Button[]{btnPlay, btnConfig, btnHighScore, btnExit}) {
+        for (Button b : new Button[]{btnPlay, btnTwoPlayer, btnConfig, btnHighScore, btnExit}) {
             b.setPrefWidth(240);
         }
+
 
         btnPlay.setOnAction(e -> {
             PlayScreen playScreen = new PlayScreen(COLUMNS, ROWS, CELL_SIZE);
@@ -64,7 +66,7 @@ public class Main extends Application {
             alert.showAndWait().ifPresent(bt -> { if (bt == yes) Platform.exit(); });
         });
 
-        VBox box = new VBox(18, title, btnPlay, btnConfig, btnHighScore, btnExit);
+        VBox box = new VBox(18, title, btnPlay, btnTwoPlayer, btnConfig, btnHighScore, btnExit);
         box.setAlignment(Pos.TOP_CENTER);
         box.setPadding(new Insets(20, 30, 20, 30));
 
