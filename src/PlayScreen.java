@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -27,6 +28,21 @@ public class PlayScreen {
     private final int COLUMNS;
     private final int ROWS;
     private final int CELL_SIZE;
+
+
+    //vraj fix trials
+    private BorderPane root; // main container for this PlayScreen
+
+    public Parent getSceneRoot() {
+        return root;
+    }
+
+
+
+    public boolean isAIEnabled() {
+        return aiEnabled;
+    }
+    //vraj fix trial end
 
     private Pane gamePane;
     private Timeline timeline;
@@ -68,7 +84,9 @@ public class PlayScreen {
         return board;
     }
 
-    public void show(Stage stage, Runnable onBack, boolean aiPlay) {
+    //vraj fix
+//    public void show(Stage stage, Runnable onBack, boolean aiPlay)
+    public void show(Stage stage, Runnable onBack, boolean aiPlay, boolean attachToStage) {
         this.aiEnabled = aiPlay;
         if (aiPlay) {
             ai = new TetrisAI(this);
@@ -134,17 +152,30 @@ public class PlayScreen {
         bottom.setAlignment(Pos.CENTER);
         bottom.setPadding(new Insets(6, 0, 8, 0));
 
-        BorderPane root = new BorderPane();
+        //vraj fix
+//        BorderPane root = new BorderPane();
+//        root.setTop(top);
+//        root.setCenter(center);
+//        root.setBottom(bottom);
+        root = new BorderPane();
         root.setTop(top);
         root.setCenter(center);
         root.setBottom(bottom);
+// vraj fix end
 
+        //vraj fix
         playScene = new Scene(root, COLUMNS * CELL_SIZE + 250, ROWS * CELL_SIZE + 180);
-        stage.setTitle("Tetris");
-        stage.setScene(playScene);
+
+        if (attachToStage) {
+            stage.setTitle("Tetris");
+            stage.setScene(playScene);
+        }
+
+//        playScene = new Scene(root, COLUMNS * CELL_SIZE + 250, ROWS * CELL_SIZE + 180);
+//        stage.setTitle("Tetris");
+//        stage.setScene(playScene);
 
         spawnTetromino();
-
         timeline = new Timeline(new KeyFrame(Duration.millis(500), e -> moveDown()));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();

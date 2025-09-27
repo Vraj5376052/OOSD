@@ -50,8 +50,16 @@ public class Main extends Application {
         btnPlay.setOnAction(e -> {
             PlayScreen playScreen = new PlayScreen(COLUMNS, ROWS, CELL_SIZE);
             // Pass AI_PLAY boolean to PlayScreen.show
-            playScreen.show(primaryStage, () -> primaryStage.setScene(homeScene), AI_PLAY);
+            playScreen.show(primaryStage, () -> primaryStage.setScene(homeScene), AI_PLAY, true);
         });
+
+        //vraj fix
+        btnTwoPlayer.setOnAction(e -> {
+            TwoPlayerScreen twoPlayerScreen = new TwoPlayerScreen(COLUMNS, ROWS, CELL_SIZE);
+            // false = Player 2 is human; change to true if you want AI
+            twoPlayerScreen.show(primaryStage, false);
+        });
+
 
         btnConfig.setOnAction(e -> showConfigScreen(primaryStage));
         btnHighScore.setOnAction(e -> showHighScoreScreen(primaryStage));
