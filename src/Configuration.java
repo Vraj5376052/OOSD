@@ -58,6 +58,9 @@ public class Configuration {
         musicCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
             Main.setMUSIC(newVal);
             musicValue.setText(newVal ? "ON" : "OFF");
+
+            if(newVal) AudioManager.playBackgroundMusic();
+            else AudioManager.stopBackgroundMusic();
         });
 
         CheckBox soundCheck = new CheckBox();
