@@ -1,8 +1,8 @@
 <component name="libraryTable">
   <library name="lib">
     <CLASSES>
-      <root url="file://$PROJECT_DIR$/javafx-sdk-21.0.8/lib" />
       <root url="jar://$PROJECT_DIR$/gson-2.10.1.jar!/" />
+      <root url="file://$PROJECT_DIR$/javafx-sdk-21.0.8/lib" />
     </CLASSES>
     <JAVADOC />
     <NATIVE>

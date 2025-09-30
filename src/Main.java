@@ -9,6 +9,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
+import java.awt.*;
+
 public class Main extends Application {
 
     private static final int CELL_SIZE = 30;
@@ -38,6 +40,7 @@ public class Main extends Application {
 
         Button btnPlay = new Button("Play");
         Button btnTwoPlayer = new Button("Two Player Mode");
+        Button btnExternal = new Button("External Mode");
         Button btnConfig = new Button("Configuration");
         Button btnHighScore = new Button("High Scores");
         Button btnExit = new Button("Exit");
@@ -59,6 +62,7 @@ public class Main extends Application {
             // false = Player 2 is human; change to true if you want AI
             twoPlayerScreen.show(primaryStage, false);
         });
+        btnExternal.setonAction( e -> startTetrisServer());
 
 
         btnConfig.setOnAction(e -> showConfigScreen(primaryStage));
@@ -112,9 +116,6 @@ public class Main extends Application {
 
     public static boolean isAI_PLAY() { return AI_PLAY; }
     public static void setAI_PLAY(boolean ai) { AI_PLAY = ai; }
-
-    public static boolean isEXTERNAL_PLAY() { return EXTERNAL_PLAY; }
-    public static void setEXTERNAL_PLAY(boolean ext) { EXTERNAL_PLAY = ext; }
 
     public static boolean isEXTEND_MODE() { return EXTEND_MODE; }
     public static void setEXTEND_MODE(boolean extend) { EXTEND_MODE = extend; }
