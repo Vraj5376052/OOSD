@@ -59,10 +59,14 @@ public class Main extends Application {
         });
 
         btnExternal.setOnAction(e -> {
-            // Launch external player client in background
+            // Create a PlayScreen and show it
+            PlayScreen playScreen = new PlayScreen(COLUMNS, ROWS, CELL_SIZE);
+            playScreen.show(primaryStage, () -> primaryStage.setScene(homeScene), false, true);
+
+            // Send game state to external server in a background thread
             new Thread(() -> {
                 try {
-                    TetrisClient.main(new String[]{});
+                    TetrisClient.sendGameState(playScreen);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     Platform.runLater(() -> {

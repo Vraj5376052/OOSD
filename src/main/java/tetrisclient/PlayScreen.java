@@ -80,6 +80,14 @@ public class PlayScreen {
         return board;
     }
 
+    // ✅ NEW: safe getter for next tetromino shape
+    public int[][] getNextTetrominoShape() {
+        if (nextTetromino != null) {
+            return nextTetromino.getShape();
+        }
+        return new int[0][0]; // never return null
+    }
+
     public void show(Stage stage, Runnable onBack, boolean aiPlay, boolean attachToStage) {
         this.aiEnabled = aiPlay;
         if (aiPlay) {
@@ -107,11 +115,7 @@ public class PlayScreen {
 
         StackPane playArea = new StackPane();
         playArea.setAlignment(Pos.TOP_LEFT);
-
-
         playArea.getChildren().addAll(new Group(frame), gamePane, pauseHint);
-
-
 
         VBox infoBox = new VBox(10);
         infoBox.setPadding(new Insets(10));
@@ -163,7 +167,21 @@ public class PlayScreen {
         }
 
         spawnTetromino();
-        timeline = new Timeline(new KeyFrame(Duration.millis(500), e -> moveDown()));
+        timeline = new Timeline(new KeyFrame(Duration.millis(500), e -> {
+            moveDown();
+
+            // --- External Player Hook ---
+            if (!aiEnabled) { // only if it's not AI
+                new Thread(() -> {
+                    try {
+                        TetrisClient.sendGameState(this); // push game state
+                    } catch (Exception ex) {
+                        System.err.println("External sync failed: " + ex.getMessage());
+                    }
+                }).start();
+            }
+        }));
+
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
 
@@ -199,7 +217,6 @@ public class PlayScreen {
             gc.strokeLine(0.5, y + 0.5, COLUMNS * CELL_SIZE + 0.5, y + 0.5);
         }
     }
-
 
     public void moveDown() {
         if (currentTetromino != null) {
