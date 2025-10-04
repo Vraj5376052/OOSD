@@ -30,15 +30,9 @@ public class PlayScreen {
     private final int ROWS;
     private final int CELL_SIZE;
 
-    private BorderPane root; // main container for this PlayScreen
-
-    public Parent getSceneRoot() {
-        return root;
-    }
-
-    public boolean isAIEnabled() {
-        return aiEnabled;
-    }
+    private BorderPane root;
+    public Parent getSceneRoot() { return root; }
+    public boolean isAIEnabled() { return aiEnabled; }
 
     private Pane gamePane;
     private Timeline timeline;
@@ -55,12 +49,18 @@ public class PlayScreen {
     private Canvas nextPreview;
 
     private boolean aiEnabled;
+    private boolean sharedTetromino = false;
     private TetrisAI ai;
 
     public PlayScreen(int columns, int rows, int cellSize) {
+        this(columns, rows, cellSize, false);
+    }
+
+    public PlayScreen(int columns, int rows, int cellSize, boolean sharedTetromino) {
         this.COLUMNS = columns;
         this.ROWS = rows;
         this.CELL_SIZE = cellSize;
+        this.sharedTetromino = sharedTetromino;
     }
 
     public int getColumns() { return COLUMNS; }
@@ -72,7 +72,7 @@ public class PlayScreen {
     public int[][] getBoard() {
         int[][] board = new int[ROWS][COLUMNS];
         for (Rectangle r : lockedBlocks) {
-            int row = (int) ((r.getY() - 1) / CELL_SIZE); // adjust row calc with same offset
+            int row = (int) ((r.getY() - 1) / CELL_SIZE);
             int col = (int) (r.getX() / CELL_SIZE);
             if (row >= 0 && row < ROWS && col >= 0 && col < COLUMNS)
                 board[row][col] = 1;
@@ -80,12 +80,10 @@ public class PlayScreen {
         return board;
     }
 
-    // ✅ NEW: safe getter for next tetromino shape
     public int[][] getNextTetrominoShape() {
-        if (nextTetromino != null) {
+        if (nextTetromino != null)
             return nextTetromino.getShape();
-        }
-        return new int[0][0]; // never return null
+        return new int[0][0];
     }
 
     public void show(Stage stage, Runnable onBack, boolean aiPlay, boolean attachToStage) {
@@ -169,12 +167,10 @@ public class PlayScreen {
         spawnTetromino();
         timeline = new Timeline(new KeyFrame(Duration.millis(500), e -> {
             moveDown();
-
-            // --- External Player Hook ---
-            if (!aiEnabled) { // only if it's not AI
+            if (!aiEnabled) {
                 new Thread(() -> {
                     try {
-                        TetrisClient.sendGameState(this); // push game state
+                        TetrisClient.sendGameState(this);
                     } catch (Exception ex) {
                         System.err.println("External sync failed: " + ex.getMessage());
                     }
@@ -209,13 +205,10 @@ public class PlayScreen {
     private void drawGrid(GraphicsContext gc) {
         gc.setStroke(Color.LIGHTGRAY);
         gc.setLineWidth(1);
-
-        for (int x = 0; x <= COLUMNS * CELL_SIZE; x += CELL_SIZE) {
+        for (int x = 0; x <= COLUMNS * CELL_SIZE; x += CELL_SIZE)
             gc.strokeLine(x + 0.5, 0.5, x + 0.5, ROWS * CELL_SIZE + 0.5);
-        }
-        for (int y = 0; y <= ROWS * CELL_SIZE; y += CELL_SIZE) {
+        for (int y = 0; y <= ROWS * CELL_SIZE; y += CELL_SIZE)
             gc.strokeLine(0.5, y + 0.5, COLUMNS * CELL_SIZE + 0.5, y + 0.5);
-        }
     }
 
     public void moveDown() {
@@ -226,13 +219,26 @@ public class PlayScreen {
                 lockedBlocks.addAll(currentTetromino.getBlocks());
                 currentTetromino = null;
                 clearFullLines();
+                if (sharedTetromino) SameTetromino.nextRound();
                 spawnTetromino();
             }
         }
     }
 
     private void spawnTetromino() {
-        if (nextTetromino == null) nextTetromino = new Tetromino();
+        System.out.println("[PlayScreen] Shared next shape: " + java.util.Arrays.deepToString(SameTetromino.getSharedShape()));
+
+        if (nextTetromino == null) {
+            if (initialShape != null) {
+                nextTetromino = new Tetromino(initialShape);
+                initialShape = null; // use only once
+            } else if (sharedTetromino) {
+                nextTetromino = new Tetromino(SameTetromino.getSharedShape());
+            } else {
+                nextTetromino = new Tetromino(sharedTetromino);
+            }
+        }
+
         currentTetromino = nextTetromino;
 
         if (currentTetromino.isColliding()) {
@@ -241,9 +247,18 @@ public class PlayScreen {
         }
 
         gamePane.getChildren().addAll(currentTetromino.getBlocks());
-        nextTetromino = new Tetromino();
+
+
+        if (sharedTetromino) {
+            nextTetromino = new Tetromino(SameTetromino.getSharedShape());
+        } else {
+            nextTetromino = new Tetromino(sharedTetromino);
+        }
+
         drawNextPreview();
     }
+
+
 
     private void drawNextPreview() {
         GraphicsContext gc = nextPreview.getGraphicsContext2D();
@@ -261,7 +276,7 @@ public class PlayScreen {
             for (int col = 0; col < COLUMNS; col++) {
                 boolean blockFound = false;
                 for (Rectangle r : lockedBlocks) {
-                    int blockRow = (int) ((r.getY() - 1) / CELL_SIZE); // use offset
+                    int blockRow = (int) ((r.getY() - 1) / CELL_SIZE);
                     int blockCol = (int) (r.getX() / CELL_SIZE);
                     if (blockRow == row && blockCol == col) { blockFound = true; break; }
                 }
@@ -284,11 +299,21 @@ public class PlayScreen {
         }
     }
 
+    //temporary debug change
+
+    private int[][] initialShape = null;
+
+    public void setInitialShape(int[][] shape) {
+        this.initialShape = shape;
+    }
+
+
+
     private void removeRow(int rowToRemove) {
         List<Rectangle> toRemove = new ArrayList<>();
         List<Rectangle> toMoveDown = new ArrayList<>();
         for (Rectangle r : lockedBlocks) {
-            int blockRow = (int) ((r.getY() - 1) / CELL_SIZE); // offset
+            int blockRow = (int) ((r.getY() - 1) / CELL_SIZE);
             if (blockRow == rowToRemove) toRemove.add(r);
             else if (blockRow < rowToRemove) toMoveDown.add(r);
         }
@@ -311,14 +336,27 @@ public class PlayScreen {
 
     public Tetromino getCurrentTetromino() { return currentTetromino; }
 
+
     public class Tetromino {
         private Rectangle[] squares = new Rectangle[4];
         private int[][] shape;
         private int x = COLUMNS / 2 - 1;
         private int y = 0;
 
-        Tetromino() {
-            shape = TetrominoShapes.getRandomShape();
+        Tetromino(int[][] predefinedShape) {
+            shape = predefinedShape;
+            Color color = Color.color(Math.random(), Math.random(), Math.random());
+            for (int i = 0; i < 4; i++) {
+                squares[i] = new Rectangle(CELL_SIZE, CELL_SIZE);
+                squares[i].setFill(color);
+                squares[i].setStroke(Color.BLACK);
+            }
+            updatePositions();
+        }
+
+
+        Tetromino(boolean shared) {
+            shape = TetrominoShapes.getRandomShape(shared);
             Color color = Color.color(Math.random(), Math.random(), Math.random());
             for (int i = 0; i < 4; i++) {
                 squares[i] = new Rectangle(CELL_SIZE, CELL_SIZE);
@@ -362,7 +400,7 @@ public class PlayScreen {
             for (Rectangle block : lockedBlocks) {
                 for (int i = 0; i < 4; i++) {
                     int blockX = (int) (block.getX() / CELL_SIZE);
-                    int blockY = (int) ((block.getY() - 1) / CELL_SIZE); // offset match
+                    int blockY = (int) ((block.getY() - 1) / CELL_SIZE);
                     int newX = x + shape[i][0];
                     int newY = y + shape[i][1];
                     if (blockX == newX && blockY == newY) return true;
@@ -377,12 +415,11 @@ public class PlayScreen {
             return list;
         }
 
-        public int getX() { return x; }
-        public int getY() { return y; }
         public int[][] getShape() { return shape; }
 
+
         public Tetromino cloneTetromino() {
-            Tetromino copy = new Tetromino();
+            Tetromino copy = new Tetromino(sharedTetromino);
             copy.x = this.x;
             copy.y = this.y;
             copy.shape = new int[4][2];
@@ -391,22 +428,35 @@ public class PlayScreen {
                 copy.shape[i][1] = this.shape[i][1];
             }
             return copy;
+
+        }
+        public int getX() {
+            return x;
+        }
+
+        public int getY() {
+            return y;
         }
     }
 
     static class TetrominoShapes {
         private static final int[][][] SHAPES = {
-                {{0,0},{1,0},{-1,0},{0,1}}, // T-shape
-                {{0,0},{1,0},{0,1},{1,1}},  // O-shape
-                {{0,0},{1,0},{-1,0},{-1,1}}, // L
-                {{0,0},{1,0},{-1,0},{1,1}}, // J
-                {{0,0},{1,0},{0,1},{-1,1}}, // S
-                {{0,0},{-1,0},{0,1},{1,1}}, // Z
-                {{0,0},{-1,0},{1,0},{2,0}} // I
+                {{0,0},{1,0},{-1,0},{0,1}},
+                {{0,0},{1,0},{0,1},{1,1}},
+                {{0,0},{1,0},{-1,0},{-1,1}},
+                {{0,0},{1,0},{-1,0},{1,1}},
+                {{0,0},{1,0},{0,1},{-1,1}},
+                {{0,0},{-1,0},{0,1},{1,1}},
+                {{0,0},{-1,0},{1,0},{2,0}}
         };
 
-        public static int[][] getRandomShape() {
-            return SHAPES[new Random().nextInt(SHAPES.length)];
+        public static int[][] getRandomShape(boolean shared) {
+            if (shared)
+                return SameTetromino.getSharedShape();  // ✅ shared sequence
+            else {
+                return SHAPES[new Random().nextInt(SHAPES.length)];
+            }
         }
+
     }
 }

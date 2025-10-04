@@ -2,11 +2,12 @@
 /Users/vrajpatel/IdeaProjects/OOSD/src/main/java/tetrisclient/Main.java
 /Users/vrajpatel/IdeaProjects/OOSD/src/main/java/tetrisclient/AudioManager.java
 /Users/vrajpatel/IdeaProjects/OOSD/src/main/java/tetrisclient/Configuration.java
-/Users/vrajpatel/IdeaProjects/OOSD/src/main/java/tetrisclient/ScoreManager.java
 /Users/vrajpatel/IdeaProjects/OOSD/src/main/java/tetrisclient/PureGame.java
 /Users/vrajpatel/IdeaProjects/OOSD/src/main/java/tetrisclient/OpMove.java
 /Users/vrajpatel/IdeaProjects/OOSD/src/main/java/tetrisclient/TetrisAI.java
 /Users/vrajpatel/IdeaProjects/OOSD/src/main/java/tetrisclient/PlayScreen.java
 /Users/vrajpatel/IdeaProjects/OOSD/src/main/java/tetrisclient/HighScoreScreen.java
 /Users/vrajpatel/IdeaProjects/OOSD/src/main/java/tetrisclient/TwoPlayerScreen.java
+/Users/vrajpatel/IdeaProjects/OOSD/src/main/java/tetrisclient/ScoreManager.java
+/Users/vrajpatel/IdeaProjects/OOSD/src/main/java/tetrisclient/SameTetromino.java
 /Users/vrajpatel/IdeaProjects/OOSD/src/main/java/tetrisclient/SplashScreen.java

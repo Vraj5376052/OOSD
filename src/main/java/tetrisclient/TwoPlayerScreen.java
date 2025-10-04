@@ -11,6 +11,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+
 public class TwoPlayerScreen {
 
     private final PlayScreen player1Screen;
@@ -23,8 +24,20 @@ public class TwoPlayerScreen {
     private boolean p2Finished = false;
 
     public TwoPlayerScreen(int cols, int rows, int cellSize) {
-        player1Screen = new PlayScreen(cols, rows, cellSize);
-        player2Screen = new PlayScreen(cols, rows, cellSize);
+
+        long sharedSeed = System.currentTimeMillis();
+        SameTetromino.setSeed(sharedSeed);
+        System.out.println("[TwoPlayerScreen] 🎯 Shared seed set: " + sharedSeed);
+
+
+        player1Screen = new PlayScreen(cols, rows, cellSize, true);
+        player2Screen = new PlayScreen(cols, rows, cellSize, true);
+
+
+        int[][] firstShape = SameTetromino.getSharedShape();
+        System.out.println("[TwoPlayerScreen] 🧩 First shared shape: " + java.util.Arrays.deepToString(firstShape));
+        player1Screen.setInitialShape(firstShape);
+        player2Screen.setInitialShape(firstShape);
     }
 
     public void show(Stage stage, boolean player2AI) {
@@ -38,7 +51,6 @@ public class TwoPlayerScreen {
         player2Score = new Label("Player 2 Score: 0");
         rightPanel.getChildren().add(player2Score);
 
-        // Launch both play screens without attaching them to the stage
         player1Screen.show(stage, () -> markPlayerFinished(1), false, false);
         player2Screen.show(stage, () -> markPlayerFinished(2), player2AI, false);
 
@@ -55,7 +67,8 @@ public class TwoPlayerScreen {
         root.setCenter(center);
         root.setRight(rightPanel);
 
-        scene = new Scene(root,
+        scene = new Scene(
+                root,
                 player1Screen.getColumns() * player1Screen.getCellSize() * 2 + 400,
                 player1Screen.getRows() * player1Screen.getCellSize() + 200
         );
@@ -92,16 +105,12 @@ public class TwoPlayerScreen {
     }
 
     private void markPlayerFinished(int player) {
-        if (player == 1) {
-            p1Finished = true;
-        } else if (player == 2) {
-            p2Finished = true;
-        }
+        if (player == 1) p1Finished = true;
+        else if (player == 2) p2Finished = true;
 
         if (p1Finished && p2Finished) {
             endGame();
         } else {
-            // One player done, waiting for the other
             Alert alert = new Alert(Alert.AlertType.INFORMATION,
                     "Player " + player + " has finished.\nWaiting for the other player...");
             alert.setHeaderText("Game Paused for Comparison");
@@ -126,7 +135,6 @@ public class TwoPlayerScreen {
         alert.setHeaderText("Game Over");
         alert.showAndWait();
 
-        // Go back to main menu
         Stage stage = (Stage) scene.getWindow();
         if (stage != null) {
             try {

@@ -4,39 +4,53 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.*;
 import java.net.Socket;
 
-/**
- * External Tetris client that connects to the server,
- * sends the current game state (from PlayScreen),
- * and receives an optimal move.
- */
 public class TetrisClient {
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 3000;
+    private static boolean serverStarted = false; //
 
-    /**
-     * Sends the game state from a PlayScreen instance to the server
-     * and prints/logs the optimal move.
-     */
+
+    private static void ensureServerRunning() {
+        if (serverStarted) return; // already launched
+
+        try (Socket socket = new Socket(SERVER_HOST, SERVER_PORT)) {
+            System.out.println("[TetrisClient] Server already running on port " + SERVER_PORT);
+            serverStarted = true;
+        } catch (IOException e) {
+            try {
+                System.out.println("[TetrisClient] 🚀 Starting local TetrisServer.jar...");
+                new ProcessBuilder("java", "-jar", "TetrisServer.jar")
+                        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                        .redirectError(ProcessBuilder.Redirect.INHERIT)
+                        .start();
+                Thread.sleep(1500); // give it a moment to boot
+                serverStarted = true;
+            } catch (Exception ex) {
+                System.err.println("[TetrisClient] Could not auto-start TetrisServer.jar: " + ex.getMessage());
+            }
+        }
+    }
+
     public static void sendGameState(PlayScreen playScreen) {
         if (playScreen == null) {
-            System.err.println("⚠ PlayScreen is null. Cannot send game state.");
+            System.err.println("PlayScreen is null. Cannot send game state.");
             return;
         }
+
+
+        ensureServerRunning();
 
         try (Socket socket = new Socket(SERVER_HOST, SERVER_PORT);
              PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-            // --- Build PureGame directly from PlayScreen ---
             PureGame game = new PureGame(playScreen);
-
-            // --- Convert PureGame → JSON ---
             ObjectMapper mapper = new ObjectMapper();
             String jsonGameState = mapper.writeValueAsString(game);
+
             out.println(jsonGameState);
             System.out.println("Sent game state to server: " + jsonGameState);
 
-            // --- Receive response ---
             String response = in.readLine();
             System.out.println("Received response from server: " + response);
 
@@ -44,7 +58,6 @@ public class TetrisClient {
                 OpMove move = mapper.readValue(response, OpMove.class);
                 System.out.println("Optimal Move: X=" + move.opX() + ", Rotations=" + move.opRotate());
 
-                // Example handling
                 if (move.opX() == 0) {
                     System.out.println("Place the piece at the left-most position.");
                 } else {
@@ -56,7 +69,7 @@ public class TetrisClient {
                     System.out.println("Rotate the piece " + move.opRotate() + " times.");
                 }
             } else {
-                System.out.println("⚠ Server returned null/empty response.");
+                System.out.println("Server returned null/empty response.");
             }
 
         } catch (IOException e) {
