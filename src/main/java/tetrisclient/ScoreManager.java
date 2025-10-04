@@ -40,7 +40,7 @@ public class ScoreManager {
 
     public static void add(String name, int score) {
         highScores.add(new ScoreEntry(name, score));
-        highScores.sort((a, b) -> Integer.compare(b.score(), a.score())); // sort descending
+        highScores.sort((a, b) -> Integer.compare(b.score(), a.score()));
         if (highScores.size() > 10) {
             highScores = new ArrayList<>(highScores.subList(0, 10));
         }
