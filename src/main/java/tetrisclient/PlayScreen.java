@@ -269,7 +269,7 @@ public class PlayScreen {
         }
     }
 
-    private void clearFullLines() {
+    public void clearFullLines() {
         int linesCleared = 0;
         for (int row = ROWS - 1; row >= 0; row--) {
             int blocksInRow = 0;
@@ -306,8 +306,6 @@ public class PlayScreen {
     public void setInitialShape(int[][] shape) {
         this.initialShape = shape;
     }
-
-
 
     private void removeRow(int rowToRemove) {
         List<Rectangle> toRemove = new ArrayList<>();
