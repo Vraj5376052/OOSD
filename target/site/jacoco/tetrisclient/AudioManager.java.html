@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AudioManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JavaTetrisClient</a> &gt; <a href="index.source.html" class="el_package">tetrisclient</a> &gt; <span class="el_source">AudioManager.java</span></div><h1>AudioManager.java</h1><pre class="source lang-java linenums">package tetrisclient;
+
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+
+import java.nio.file.Paths;
+
+/**
+ * AudioManager for Tetris.
+ * Includes real initialization and mock-friendly stubs for testing.
+ */
+<span class="nc" id="L12">public class AudioManager {</span>
+
+    private static MediaPlayer backgroundMusicPlayer;
+    private static MediaPlayer soundEffectPlayer;
+    private static MediaPlayer soundEffectLine;
+<span class="fc" id="L17">    private static boolean isInitialized = false;</span>
+
+    /** Initialize media players */
+    public static void initialize() {
+<span class="nc bnc" id="L21" title="All 2 branches missed.">        if (isInitialized) return;</span>
+
+        try {
+            // Only initialize if JavaFX Media is available
+<span class="nc" id="L25">            Media bgMusic = new Media(Paths.get(&quot;assets/music/tetrisbg.mp3&quot;).toUri().toString());</span>
+<span class="nc" id="L26">            backgroundMusicPlayer = new MediaPlayer(bgMusic);</span>
+<span class="nc" id="L27">            backgroundMusicPlayer.setCycleCount(MediaPlayer.INDEFINITE);</span>
+
+<span class="nc" id="L29">            Media soundEffect = new Media(Paths.get(&quot;assets/sounds/piece_fall.mp3&quot;).toUri().toString());</span>
+<span class="nc" id="L30">            soundEffectPlayer = new MediaPlayer(soundEffect);</span>
+
+<span class="nc" id="L32">            Media soundEffect2 = new Media(Paths.get(&quot;assets/sounds/line.mp3&quot;).toUri().toString());</span>
+<span class="nc" id="L33">            soundEffectLine = new MediaPlayer(soundEffect2);</span>
+
+<span class="nc" id="L35">            isInitialized = true;</span>
+<span class="nc" id="L36">        } catch (Exception e) {</span>
+<span class="nc" id="L37">            System.err.println(&quot;Error AudioManager (ignored for testing): &quot; + e.getMessage());</span>
+            // For testing, we can just leave the players null
+<span class="nc" id="L39">            isInitialized = true;</span>
+<span class="nc" id="L40">        }</span>
+<span class="nc" id="L41">    }</span>
+
+    /** Play background music if enabled */
+    public static void playBackgroundMusic() {
+<span class="nc bnc" id="L45" title="All 4 branches missed.">        if (backgroundMusicPlayer != null &amp;&amp; Main.isMUSIC()) {</span>
+<span class="nc" id="L46">            backgroundMusicPlayer.play();</span>
+        }
+<span class="nc" id="L48">    }</span>
+
+    /** Stop background music */
+    public static void stopBackgroundMusic() {
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        if (backgroundMusicPlayer != null) {</span>
+<span class="nc" id="L53">            backgroundMusicPlayer.stop();</span>
+        }
+<span class="nc" id="L55">    }</span>
+
+    /** Play piece fall sound */
+    public static void playPieceFallSound() {
+<span class="nc bnc" id="L59" title="All 4 branches missed.">        if (soundEffectPlayer != null &amp;&amp; Main.isSOUND_EFFECTS()) {</span>
+<span class="nc" id="L60">            soundEffectPlayer.stop();</span>
+<span class="nc" id="L61">            soundEffectPlayer.seek(soundEffectPlayer.getStartTime());</span>
+<span class="nc" id="L62">            soundEffectPlayer.play();</span>
+        }
+<span class="nc" id="L64">    }</span>
+
+    /** Play line clear sound */
+    public static void playLineSound() {
+<span class="pc bpc" id="L68" title="3 of 4 branches missed.">        if (soundEffectLine != null &amp;&amp; Main.isSOUND_EFFECTS()) {</span>
+<span class="nc" id="L69">            soundEffectLine.stop();</span>
+<span class="nc" id="L70">            soundEffectLine.seek(soundEffectLine.getStartTime());</span>
+<span class="nc" id="L71">            soundEffectLine.play();</span>
+        }
+<span class="fc" id="L73">    }</span>
+
+    /** Mock-friendly method for testing */
+    public static void play(String s) {
+        // Do nothing in tests
+<span class="fc" id="L78">    }</span>
+
+    /** Mock-friendly stopAll for testing */
+    public static Object stopAll() {
+        // Do nothing in tests
+<span class="fc" id="L83">        return null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

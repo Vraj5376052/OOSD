@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PureGame.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JavaTetrisClient</a> &gt; <a href="index.source.html" class="el_package">tetrisclient</a> &gt; <span class="el_source">PureGame.java</span></div><h1>PureGame.java</h1><pre class="source lang-java linenums">package tetrisclient;
+
+import java.util.Arrays;
+
+public class PureGame {
+    private int width;
+    private int height;
+    private int[][] cells;
+    private int[][] currentShape;
+    private int[][] nextShape;
+
+    // Default constructor (needed by Jackson)
+<span class="nc" id="L13">    public PureGame() {}</span>
+
+    // Convenience constructor: build from PlayScreen
+<span class="nc" id="L16">    public PureGame(PlayScreen playScreen) {</span>
+<span class="nc bnc" id="L17" title="All 2 branches missed.">        if (playScreen != null) {</span>
+<span class="nc" id="L18">            this.width = playScreen.getColumns();</span>
+<span class="nc" id="L19">            this.height = playScreen.getRows();</span>
+<span class="nc" id="L20">            this.cells = playScreen.getBoard();</span>
+<span class="nc bnc" id="L21" title="All 2 branches missed.">            if (playScreen.getCurrentTetromino() != null) {</span>
+<span class="nc" id="L22">                this.currentShape = playScreen.getCurrentTetromino().getShape();</span>
+            }
+<span class="nc" id="L24">            this.nextShape = playScreen.getNextTetrominoShape();</span>
+        }
+<span class="nc" id="L26">    }</span>
+
+    // Getters and setters
+<span class="nc" id="L29">    public int getWidth() { return width; }</span>
+<span class="nc" id="L30">    public void setWidth(int width) { this.width = width; }</span>
+
+<span class="nc" id="L32">    public int getHeight() { return height; }</span>
+<span class="nc" id="L33">    public void setHeight(int height) { this.height = height; }</span>
+
+<span class="nc bnc" id="L35" title="All 2 branches missed.">    public int[][] getCells() { return cells != null ? cells : new int[0][0]; }</span>
+<span class="nc" id="L36">    public void setCells(int[][] cells) { this.cells = cells; }</span>
+
+<span class="nc bnc" id="L38" title="All 2 branches missed.">    public int[][] getCurrentShape() { return currentShape != null ? currentShape : new int[0][0]; }</span>
+<span class="nc" id="L39">    public void setCurrentShape(int[][] currentShape) { this.currentShape = currentShape; }</span>
+
+<span class="nc bnc" id="L41" title="All 2 branches missed.">    public int[][] getNextShape() { return nextShape != null ? nextShape : new int[0][0]; }</span>
+<span class="nc" id="L42">    public void setNextShape(int[][] nextShape) { this.nextShape = nextShape; }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L46">        return &quot;PureGame{&quot; +</span>
+                &quot;width=&quot; + width +
+                &quot;, height=&quot; + height +
+<span class="nc" id="L49">                &quot;, cells=&quot; + Arrays.deepToString(getCells()) +</span>
+<span class="nc" id="L50">                &quot;, currentShape=&quot; + Arrays.deepToString(getCurrentShape()) +</span>
+<span class="nc" id="L51">                &quot;, nextShape=&quot; + Arrays.deepToString(getNextShape()) +</span>
+                '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
