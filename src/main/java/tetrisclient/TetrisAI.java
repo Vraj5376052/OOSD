@@ -11,7 +11,7 @@ public class TetrisAI {
     public void start() {
         new Thread(() -> {
             while (true) {
-                try { Thread.sleep(1500); } catch (InterruptedException e) { return; }
+                try { Thread.sleep(2000); } catch (InterruptedException e) { return; }
                 PlayScreen.Tetromino current = screen.getCurrentTetromino();
                 if (current == null) continue;
 
