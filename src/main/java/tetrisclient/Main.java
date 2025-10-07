@@ -30,7 +30,7 @@ public class Main extends Application {
         SplashScreen.show(primaryStage, () -> showMainMenu(primaryStage));
     }
 
-    private void showMainMenu(Stage primaryStage) {
+    public void showMainMenu(Stage primaryStage) {
         Label title = new Label("Main Menu");
         title.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
 
@@ -66,7 +66,9 @@ public class Main extends Application {
             // Send game state to external server in a background thread
             new Thread(() -> {
                 try {
-                    TetrisClient.sendGameState(playScreen);
+                    TetrisClient.sendGameState(playScreen, primaryStage);
+
+
                 } catch (Exception ex) {
                     ex.printStackTrace();
                     Platform.runLater(() -> {

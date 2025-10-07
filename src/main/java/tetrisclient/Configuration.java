@@ -16,6 +16,8 @@ import javafx.stage.Stage;
 
 public class Configuration {
 
+    private static boolean externalPlayerEnabled = false;
+
     public static void show(Stage stage, Runnable onBack) {
         // Labels for displaying current values
         Label widthValue = new Label(String.valueOf(Main.getColumns()));
@@ -86,7 +88,10 @@ public class Configuration {
         extendCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
             Main.setEXTEND_MODE(newVal);
             extendValue.setText(newVal ? "ON" : "OFF");
+            externalPlayerEnabled = newVal;
         });
+
+
 
         // Grid layout
         GridPane grid = new GridPane();
@@ -145,4 +150,8 @@ public class Configuration {
         stage.setTitle("Configuration");
         stage.setScene(configScene);
     }
+    public static boolean isExternalPlayerEnabled() {
+        return externalPlayerEnabled;
+    }
+
 }

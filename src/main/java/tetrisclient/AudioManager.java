@@ -5,10 +5,6 @@ import javafx.scene.media.MediaPlayer;
 
 import java.nio.file.Paths;
 
-/**
- * AudioManager for Tetris.
- * Includes real initialization and mock-friendly stubs for testing.
- */
 public class AudioManager {
 
     private static MediaPlayer backgroundMusicPlayer;
@@ -16,7 +12,6 @@ public class AudioManager {
     private static MediaPlayer soundEffectLine;
     private static boolean isInitialized = false;
 
-    /** Initialize media players */
     public static void initialize() {
         if (isInitialized) return;
 
@@ -40,21 +35,18 @@ public class AudioManager {
         }
     }
 
-    /** Play background music if enabled */
     public static void playBackgroundMusic() {
         if (backgroundMusicPlayer != null && Main.isMUSIC()) {
             backgroundMusicPlayer.play();
         }
     }
 
-    /** Stop background music */
     public static void stopBackgroundMusic() {
         if (backgroundMusicPlayer != null) {
             backgroundMusicPlayer.stop();
         }
     }
 
-    /** Play piece fall sound */
     public static void playPieceFallSound() {
         if (soundEffectPlayer != null && Main.isSOUND_EFFECTS()) {
             soundEffectPlayer.stop();
@@ -63,7 +55,6 @@ public class AudioManager {
         }
     }
 
-    /** Play line clear sound */
     public static void playLineSound() {
         if (soundEffectLine != null && Main.isSOUND_EFFECTS()) {
             soundEffectLine.stop();
@@ -72,14 +63,14 @@ public class AudioManager {
         }
     }
 
-    /** Mock-friendly method for testing */
+
     public static void play(String s) {
         // Do nothing in tests
     }
 
-    /** Mock-friendly stopAll for testing */
+
     public static Object stopAll() {
-        // Do nothing in tests
+        // do nothing in tests
         return null;
     }
 }

@@ -61,6 +61,7 @@ public class PlayScreen {
         this.ROWS = rows;
         this.CELL_SIZE = cellSize;
         this.sharedTetromino = sharedTetromino;
+
     }
 
     public int getColumns() { return COLUMNS; }
@@ -170,7 +171,10 @@ public class PlayScreen {
             if (!aiEnabled) {
                 new Thread(() -> {
                     try {
-                        TetrisClient.sendGameState(this);
+                        TetrisClient.sendGameState(this, stage);
+
+
+
                     } catch (Exception ex) {
                         System.err.println("External sync failed: " + ex.getMessage());
                     }
@@ -416,6 +420,7 @@ public class PlayScreen {
         public int[][] getShape() { return shape; }
 
 
+
         public Tetromino cloneTetromino() {
             Tetromino copy = new Tetromino(sharedTetromino);
             copy.x = this.x;
@@ -454,7 +459,14 @@ public class PlayScreen {
             else {
                 return SHAPES[new Random().nextInt(SHAPES.length)];
             }
+
         }
 
+    }
+    // ✅ Add this method here (right before last brace)
+    public void stopGame() {
+        if (timeline != null) {
+            timeline.stop();
+        }
     }
 }
