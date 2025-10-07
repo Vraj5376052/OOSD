@@ -26,14 +26,19 @@ import java.util.List;
 import java.util.Random;
 
 public class PlayScreen {
+    // Tetris grid
     private final int COLUMNS;
     private final int ROWS;
     private final int CELL_SIZE;
 
+    // The root container
     private BorderPane root;
     public Parent getSceneRoot() { return root; }
+
+    // AI check
     public boolean isAIEnabled() { return aiEnabled; }
 
+    // Game elements
     private Pane gamePane;
     private Timeline timeline;
     private Tetromino currentTetromino;
@@ -41,17 +46,23 @@ public class PlayScreen {
     private List<Rectangle> lockedBlocks = new ArrayList<>();
     private Scene playScene;
 
+    // Game score and line information
     private int score = 0;
     private int totalLines = 0;
+    private int level = 1;
 
+    // UI elements
     private Label scoreLabel;
     private Label linesLabel;
+    private Label levelLabel;
     private Canvas nextPreview;
 
+    // AI related flags and functionality
     private boolean aiEnabled;
     private boolean sharedTetromino = false;
     private TetrisAI ai;
 
+    // Initialize PlayScreen
     public PlayScreen(int columns, int rows, int cellSize) {
         this(columns, rows, cellSize, false);
     }
@@ -63,12 +74,14 @@ public class PlayScreen {
         this.sharedTetromino = sharedTetromino;
     }
 
+    // Getter methods for grid properties
     public int getColumns() { return COLUMNS; }
     public int getRows() { return ROWS; }
     public int getCellSize() { return CELL_SIZE; }
     public List<Rectangle> getLockedBlocks() { return lockedBlocks; }
     public Scene getScene() { return playScene; }
 
+    // Generates the game board
     public int[][] getBoard() {
         int[][] board = new int[ROWS][COLUMNS];
         for (Rectangle r : lockedBlocks) {
@@ -80,12 +93,14 @@ public class PlayScreen {
         return board;
     }
 
+    // preview next Tetromino
     public int[][] getNextTetrominoShape() {
         if (nextTetromino != null)
             return nextTetromino.getShape();
         return new int[0][0];
     }
 
+    // Initialize and show the game scene
     public void show(Stage stage, Runnable onBack, boolean aiPlay, boolean attachToStage) {
         this.aiEnabled = aiPlay;
         if (aiPlay) {
@@ -93,28 +108,36 @@ public class PlayScreen {
             ai.start();
         }
 
+        // Reset game elements
         lockedBlocks.clear();
         score = 0;
         totalLines = 0;
+        level = 1;
 
+        // Create game area
         gamePane = new Pane();
         gamePane.setPrefSize(COLUMNS * CELL_SIZE, ROWS * CELL_SIZE);
 
+        // Add grid
         Canvas gridCanvas = new Canvas(COLUMNS * CELL_SIZE, ROWS * CELL_SIZE);
         drawGrid(gridCanvas.getGraphicsContext2D());
         gamePane.getChildren().add(gridCanvas);
 
+        // Add frame
         Rectangle frame = new Rectangle(COLUMNS * CELL_SIZE + 2, ROWS * CELL_SIZE + 2);
         frame.setFill(Color.TRANSPARENT);
         frame.setStroke(Color.SILVER);
 
+        // Pause hint label
         Label pauseHint = new Label("Game is paused,\nPress 'P' to continue...");
         pauseHint.setVisible(false);
 
+        // Play area layout
         StackPane playArea = new StackPane();
         playArea.setAlignment(Pos.TOP_LEFT);
         playArea.getChildren().addAll(new Group(frame), gamePane, pauseHint);
 
+        // Info box layout
         VBox infoBox = new VBox(10);
         infoBox.setPadding(new Insets(10));
         infoBox.setAlignment(Pos.TOP_LEFT);
@@ -123,20 +146,24 @@ public class PlayScreen {
         Label playerType = new Label("Player Type: " + (aiPlay ? "AI" : "Human"));
         linesLabel = new Label("Lines Erased: 0");
         scoreLabel = new Label("Score: 0");
+        levelLabel = new Label("Level: 1");
         Label nextLabel = new Label("Next Tetromino:");
         nextPreview = new Canvas(80, 80);
 
         infoBox.getChildren().addAll(infoTitle, playerType, linesLabel, scoreLabel, nextLabel, nextPreview);
 
+        // Layout for the whole screen
         HBox center = new HBox(20, infoBox, playArea);
         center.setAlignment(Pos.CENTER);
 
+        // Title and top section of the game
         Label title = new Label("Play");
         title.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
         HBox top = new HBox(title);
         top.setAlignment(Pos.CENTER);
         top.setPadding(new Insets(8, 0, 4, 0));
 
+        // Back button
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Stop Game?", ButtonType.YES, ButtonType.NO);
@@ -148,15 +175,18 @@ public class PlayScreen {
             });
         });
 
+        // Bottom section
         HBox bottom = new HBox(backButton);
         bottom.setAlignment(Pos.CENTER);
         bottom.setPadding(new Insets(6, 0, 8, 0));
 
+        // Main root layout of the game screen
         root = new BorderPane();
         root.setTop(top);
         root.setCenter(center);
         root.setBottom(bottom);
 
+        // Create the scene and set it to the stage
         playScene = new Scene(root, COLUMNS * CELL_SIZE + 250, ROWS * CELL_SIZE + 180);
 
         if (attachToStage) {
@@ -164,7 +194,10 @@ public class PlayScreen {
             stage.setScene(playScene);
         }
 
+        // Start the game by spawning the first tetromino
         spawnTetromino();
+
+        // Timeline for the game loop
         timeline = new Timeline(new KeyFrame(Duration.millis(500), e -> {
             moveDown();
             if (!aiEnabled) {
@@ -181,6 +214,7 @@ public class PlayScreen {
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
 
+        // Pause functionality
         final BooleanProperty paused = new SimpleBooleanProperty(false);
         playScene.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.P) {
@@ -202,6 +236,7 @@ public class PlayScreen {
         playScene.getRoot().requestFocus();
     }
 
+    // Draws the grid lines
     private void drawGrid(GraphicsContext gc) {
         gc.setStroke(Color.LIGHTGRAY);
         gc.setLineWidth(1);
@@ -211,6 +246,7 @@ public class PlayScreen {
             gc.strokeLine(0.5, y + 0.5, COLUMNS * CELL_SIZE + 0.5, y + 0.5);
     }
 
+    // Move the current tetromino downwards
     public void moveDown() {
         if (currentTetromino != null) {
             boolean moved = currentTetromino.move(0, 1);
@@ -225,6 +261,7 @@ public class PlayScreen {
         }
     }
 
+    // Method to spawn a new tetromino
     private void spawnTetromino() {
         System.out.println("[PlayScreen] Shared next shape: " + java.util.Arrays.deepToString(SameTetromino.getSharedShape()));
 
@@ -258,8 +295,7 @@ public class PlayScreen {
         drawNextPreview();
     }
 
-
-
+    // Draw the preview of the next tetromino
     private void drawNextPreview() {
         GraphicsContext gc = nextPreview.getGraphicsContext2D();
         gc.clearRect(0, 0, 80, 80);
@@ -269,6 +305,7 @@ public class PlayScreen {
         }
     }
 
+    // Clear full lines from the board
     public void clearFullLines() {
         int linesCleared = 0;
         for (int row = ROWS - 1; row >= 0; row--) {
@@ -289,17 +326,18 @@ public class PlayScreen {
                 AudioManager.playLineSound();
             }
         }
+        // Update score, level and lines
         if (linesCleared > 0) {
             totalLines += linesCleared;
+            level += 1;
             score += switch (linesCleared) {
                 case 1 -> 150; case 2 -> 300; case 3 -> 400; case 4 -> 500; default -> 0;
             };
             linesLabel.setText("Lines Erased: " + totalLines);
             scoreLabel.setText("Score: " + score);
+            levelLabel.setText("Level: " + level);
         }
     }
-
-    //temporary debug change
 
     private int[][] initialShape = null;
 
@@ -307,6 +345,7 @@ public class PlayScreen {
         this.initialShape = shape;
     }
 
+    // remove a row
     private void removeRow(int rowToRemove) {
         List<Rectangle> toRemove = new ArrayList<>();
         List<Rectangle> toMoveDown = new ArrayList<>();
@@ -319,6 +358,7 @@ public class PlayScreen {
         for (Rectangle r : toMoveDown) r.setY(r.getY() + CELL_SIZE);
     }
 
+    // End the game
     private void gameOver() {
         timeline.stop();
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -334,7 +374,7 @@ public class PlayScreen {
 
     public Tetromino getCurrentTetromino() { return currentTetromino; }
 
-
+    // Tetromino class represents each falling block
     public class Tetromino {
         private Rectangle[] squares = new Rectangle[4];
         private int[][] shape;
@@ -352,7 +392,7 @@ public class PlayScreen {
             updatePositions();
         }
 
-
+        // Create a tetromino with random shape
         Tetromino(boolean shared) {
             shape = TetrominoShapes.getRandomShape(shared);
             Color color = Color.color(Math.random(), Math.random(), Math.random());
@@ -364,12 +404,14 @@ public class PlayScreen {
             updatePositions();
         }
 
+        // Move the tetromino
         boolean move(int dx, int dy) {
             x += dx; y += dy;
             if (isOutOfBounds() || isColliding()) { x -= dx; y -= dy; return false; }
             updatePositions(); return true;
         }
 
+        // Rotate the tetromino
         void rotate() {
             int[][] rotated = new int[4][2];
             for (int i = 0; i < 4; i++) { rotated[i][0] = -shape[i][1]; rotated[i][1] = shape[i][0]; }
@@ -379,6 +421,7 @@ public class PlayScreen {
             else updatePositions();
         }
 
+        // Update the positions
         void updatePositions() {
             for (int i = 0; i < 4; i++) {
                 squares[i].setX((x + shape[i][0]) * CELL_SIZE);
@@ -386,6 +429,7 @@ public class PlayScreen {
             }
         }
 
+        // Check if the tetromino is out of bounds
         boolean isOutOfBounds() {
             for (int i = 0; i < 4; i++) {
                 int newX = x + shape[i][0]; int newY = y + shape[i][1];
@@ -394,6 +438,7 @@ public class PlayScreen {
             return false;
         }
 
+        // Check if the tetromino is colliding
         boolean isColliding() {
             for (Rectangle block : lockedBlocks) {
                 for (int i = 0; i < 4; i++) {
@@ -407,15 +452,17 @@ public class PlayScreen {
             return false;
         }
 
+        // Get the blocks for this tetromino
         List<Rectangle> getBlocks() {
             List<Rectangle> list = new ArrayList<>();
             for (Rectangle r : squares) list.add(r);
             return list;
         }
 
+        // Get the shape of the tetromino
         public int[][] getShape() { return shape; }
 
-
+        // Clone the tetromino
         public Tetromino cloneTetromino() {
             Tetromino copy = new Tetromino(sharedTetromino);
             copy.x = this.x;
@@ -437,6 +484,7 @@ public class PlayScreen {
         }
     }
 
+    // Manage tetromino shapes
     static class TetrominoShapes {
         private static final int[][][] SHAPES = {
                 {{0,0},{1,0},{-1,0},{0,1}},
@@ -450,7 +498,7 @@ public class PlayScreen {
 
         public static int[][] getRandomShape(boolean shared) {
             if (shared)
-                return SameTetromino.getSharedShape();  // ✅ shared sequence
+                return SameTetromino.getSharedShape();
             else {
                 return SHAPES[new Random().nextInt(SHAPES.length)];
             }

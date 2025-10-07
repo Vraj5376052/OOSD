@@ -23,7 +23,7 @@ public class TetrisClient {
                         .redirectOutput(ProcessBuilder.Redirect.INHERIT)
                         .redirectError(ProcessBuilder.Redirect.INHERIT)
                         .start();
-                Thread.sleep(1500); // give it a moment to boot
+                Thread.sleep(1500);
                 serverStarted = true;
             } catch (Exception ex) {
                 System.err.println("[TetrisClient] Could not auto-start TetrisServer.jar: " + ex.getMessage());

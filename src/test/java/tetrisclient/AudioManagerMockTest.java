@@ -13,15 +13,14 @@ class AudioManagerMockTest {
     @BeforeAll
     static void initFX() throws InterruptedException {
         FXInitializer.init();
+        AudioManager.initialize();
     }
 
     @Test
     void testPlaySound() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         Platform.runLater(() -> {
-            assertDoesNotThrow(() -> {
-                AudioManager.play("mock_sound.mp3");
-            });
+            assertDoesNotThrow(() -> AudioManager.play("mock_sound.mp3"));
             latch.countDown();
         });
         latch.await();
