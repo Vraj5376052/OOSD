@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SameTetromino.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JavaTetrisClient</a> &gt; <a href="index.source.html" class="el_package">tetrisclient</a> &gt; <span class="el_source">SameTetromino.java</span></div><h1>SameTetromino.java</h1><pre class="source lang-java linenums">package tetrisclient;
+
+import java.util.Random;
+
+<span class="nc" id="L5">public class SameTetromino {</span>
+    private static Random random;
+<span class="nc" id="L7">    private static boolean initialized = false;</span>
+
+    // 🔹 Shared &quot;current&quot; shape buffer
+    private static int[][] currentShape;
+
+    public static void setSeed(long seed) {
+<span class="nc" id="L13">        random = new Random(seed);</span>
+<span class="nc" id="L14">        initialized = true;</span>
+<span class="nc" id="L15">        currentShape = null;</span>
+<span class="nc" id="L16">        System.out.println(&quot;[SameTetromino] ✅ Seed set: &quot; + seed);</span>
+<span class="nc" id="L17">    }</span>
+
+<span class="nc" id="L19">    private static int[][][] SHAPES = {</span>
+            {{0,0},{1,0},{-1,0},{0,1}},     // T
+            {{0,0},{1,0},{0,1},{1,1}},      // O
+            {{0,0},{1,0},{-1,0},{-1,1}},    // L
+            {{0,0},{1,0},{-1,0},{1,1}},     // J
+            {{0,0},{1,0},{0,1},{-1,1}},     // S
+            {{0,0},{-1,0},{0,1},{1,1}},     // Z
+            {{0,0},{-1,0},{1,0},{2,0}}      // I
+    };
+
+    // 🔹 Returns the same shape until nextRound() is called
+    public static int[][] getSharedShape() {
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        if (!initialized) setSeed(System.currentTimeMillis());</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        if (currentShape == null) {</span>
+<span class="nc" id="L33">            int idx = random.nextInt(SHAPES.length);</span>
+<span class="nc" id="L34">            currentShape = SHAPES[idx];</span>
+<span class="nc" id="L35">            System.out.println(&quot;[SameTetromino] 🎲 New shared shape index: &quot; + idx);</span>
+<span class="nc" id="L36">        } else {</span>
+<span class="nc" id="L37">            System.out.println(&quot;[SameTetromino] 🔁 Returning same shape as previous round&quot;);</span>
+        }
+<span class="nc" id="L39">        return currentShape;</span>
+    }
+
+    // 🔹 Advance RNG for next round (called after both have placed)
+    public static void nextRound() {
+<span class="nc" id="L44">        currentShape = null;</span>
+<span class="nc" id="L45">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

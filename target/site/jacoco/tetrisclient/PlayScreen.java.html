@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlayScreen.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JavaTetrisClient</a> &gt; <a href="index.source.html" class="el_package">tetrisclient</a> &gt; <span class="el_source">PlayScreen.java</span></div><h1>PlayScreen.java</h1><pre class="source lang-java linenums">package tetrisclient;
+
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.stage.Stage;
+import javafx.util.Duration;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class PlayScreen {
+    private final int COLUMNS;
+    private final int ROWS;
+    private final int CELL_SIZE;
+
+    private BorderPane root;
+<span class="nc" id="L34">    public Parent getSceneRoot() { return root; }</span>
+<span class="nc" id="L35">    public boolean isAIEnabled() { return aiEnabled; }</span>
+
+    private Pane gamePane;
+    private Timeline timeline;
+    private Tetromino currentTetromino;
+    private Tetromino nextTetromino;
+<span class="fc" id="L41">    private List&lt;Rectangle&gt; lockedBlocks = new ArrayList&lt;&gt;();</span>
+    private Scene playScene;
+
+<span class="fc" id="L44">    private int score = 0;</span>
+<span class="fc" id="L45">    private int totalLines = 0;</span>
+
+    private Label scoreLabel;
+    private Label linesLabel;
+    private Canvas nextPreview;
+
+    private boolean aiEnabled;
+<span class="fc" id="L52">    private boolean sharedTetromino = false;</span>
+    private TetrisAI ai;
+
+    public PlayScreen(int columns, int rows, int cellSize) {
+<span class="fc" id="L56">        this(columns, rows, cellSize, false);</span>
+<span class="fc" id="L57">    }</span>
+
+<span class="fc" id="L59">    public PlayScreen(int columns, int rows, int cellSize, boolean sharedTetromino) {</span>
+<span class="fc" id="L60">        this.COLUMNS = columns;</span>
+<span class="fc" id="L61">        this.ROWS = rows;</span>
+<span class="fc" id="L62">        this.CELL_SIZE = cellSize;</span>
+<span class="fc" id="L63">        this.sharedTetromino = sharedTetromino;</span>
+<span class="fc" id="L64">    }</span>
+
+<span class="nc" id="L66">    public int getColumns() { return COLUMNS; }</span>
+<span class="nc" id="L67">    public int getRows() { return ROWS; }</span>
+<span class="nc" id="L68">    public int getCellSize() { return CELL_SIZE; }</span>
+<span class="nc" id="L69">    public List&lt;Rectangle&gt; getLockedBlocks() { return lockedBlocks; }</span>
+<span class="nc" id="L70">    public Scene getScene() { return playScene; }</span>
+
+    public int[][] getBoard() {
+<span class="nc" id="L73">        int[][] board = new int[ROWS][COLUMNS];</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        for (Rectangle r : lockedBlocks) {</span>
+<span class="nc" id="L75">            int row = (int) ((r.getY() - 1) / CELL_SIZE);</span>
+<span class="nc" id="L76">            int col = (int) (r.getX() / CELL_SIZE);</span>
+<span class="nc bnc" id="L77" title="All 8 branches missed.">            if (row &gt;= 0 &amp;&amp; row &lt; ROWS &amp;&amp; col &gt;= 0 &amp;&amp; col &lt; COLUMNS)</span>
+<span class="nc" id="L78">                board[row][col] = 1;</span>
+<span class="nc" id="L79">        }</span>
+<span class="nc" id="L80">        return board;</span>
+    }
+
+    public int[][] getNextTetrominoShape() {
+<span class="nc bnc" id="L84" title="All 2 branches missed.">        if (nextTetromino != null)</span>
+<span class="nc" id="L85">            return nextTetromino.getShape();</span>
+<span class="nc" id="L86">        return new int[0][0];</span>
+    }
+
+    public void show(Stage stage, Runnable onBack, boolean aiPlay, boolean attachToStage) {
+<span class="nc" id="L90">        this.aiEnabled = aiPlay;</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        if (aiPlay) {</span>
+<span class="nc" id="L92">            ai = new TetrisAI(this);</span>
+<span class="nc" id="L93">            ai.start();</span>
+        }
+
+<span class="nc" id="L96">        lockedBlocks.clear();</span>
+<span class="nc" id="L97">        score = 0;</span>
+<span class="nc" id="L98">        totalLines = 0;</span>
+
+<span class="nc" id="L100">        gamePane = new Pane();</span>
+<span class="nc" id="L101">        gamePane.setPrefSize(COLUMNS * CELL_SIZE, ROWS * CELL_SIZE);</span>
+
+<span class="nc" id="L103">        Canvas gridCanvas = new Canvas(COLUMNS * CELL_SIZE, ROWS * CELL_SIZE);</span>
+<span class="nc" id="L104">        drawGrid(gridCanvas.getGraphicsContext2D());</span>
+<span class="nc" id="L105">        gamePane.getChildren().add(gridCanvas);</span>
+
+<span class="nc" id="L107">        Rectangle frame = new Rectangle(COLUMNS * CELL_SIZE + 2, ROWS * CELL_SIZE + 2);</span>
+<span class="nc" id="L108">        frame.setFill(Color.TRANSPARENT);</span>
+<span class="nc" id="L109">        frame.setStroke(Color.SILVER);</span>
+
+<span class="nc" id="L111">        Label pauseHint = new Label(&quot;Game is paused,\nPress 'P' to continue...&quot;);</span>
+<span class="nc" id="L112">        pauseHint.setVisible(false);</span>
+
+<span class="nc" id="L114">        StackPane playArea = new StackPane();</span>
+<span class="nc" id="L115">        playArea.setAlignment(Pos.TOP_LEFT);</span>
+<span class="nc" id="L116">        playArea.getChildren().addAll(new Group(frame), gamePane, pauseHint);</span>
+
+<span class="nc" id="L118">        VBox infoBox = new VBox(10);</span>
+<span class="nc" id="L119">        infoBox.setPadding(new Insets(10));</span>
+<span class="nc" id="L120">        infoBox.setAlignment(Pos.TOP_LEFT);</span>
+
+<span class="nc" id="L122">        Label infoTitle = new Label(&quot;Game Info&quot;);</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        Label playerType = new Label(&quot;Player Type: &quot; + (aiPlay ? &quot;AI&quot; : &quot;Human&quot;));</span>
+<span class="nc" id="L124">        linesLabel = new Label(&quot;Lines Erased: 0&quot;);</span>
+<span class="nc" id="L125">        scoreLabel = new Label(&quot;Score: 0&quot;);</span>
+<span class="nc" id="L126">        Label nextLabel = new Label(&quot;Next Tetromino:&quot;);</span>
+<span class="nc" id="L127">        nextPreview = new Canvas(80, 80);</span>
+
+<span class="nc" id="L129">        infoBox.getChildren().addAll(infoTitle, playerType, linesLabel, scoreLabel, nextLabel, nextPreview);</span>
+
+<span class="nc" id="L131">        HBox center = new HBox(20, infoBox, playArea);</span>
+<span class="nc" id="L132">        center.setAlignment(Pos.CENTER);</span>
+
+<span class="nc" id="L134">        Label title = new Label(&quot;Play&quot;);</span>
+<span class="nc" id="L135">        title.setFont(Font.font(&quot;SansSerif&quot;, FontWeight.BOLD, 22));</span>
+<span class="nc" id="L136">        HBox top = new HBox(title);</span>
+<span class="nc" id="L137">        top.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L138">        top.setPadding(new Insets(8, 0, 4, 0));</span>
+
+<span class="nc" id="L140">        Button backButton = new Button(&quot;Back&quot;);</span>
+<span class="nc" id="L141">        backButton.setOnAction(e -&gt; {</span>
+<span class="nc" id="L142">            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, &quot;Stop Game?&quot;, ButtonType.YES, ButtonType.NO);</span>
+<span class="nc" id="L143">            alert.showAndWait().ifPresent(bt -&gt; {</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">                if (bt == ButtonType.YES) {</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">                    if (timeline != null) timeline.stop();</span>
+<span class="nc" id="L146">                    onBack.run();</span>
+                }
+<span class="nc" id="L148">            });</span>
+<span class="nc" id="L149">        });</span>
+
+<span class="nc" id="L151">        HBox bottom = new HBox(backButton);</span>
+<span class="nc" id="L152">        bottom.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L153">        bottom.setPadding(new Insets(6, 0, 8, 0));</span>
+
+<span class="nc" id="L155">        root = new BorderPane();</span>
+<span class="nc" id="L156">        root.setTop(top);</span>
+<span class="nc" id="L157">        root.setCenter(center);</span>
+<span class="nc" id="L158">        root.setBottom(bottom);</span>
+
+<span class="nc" id="L160">        playScene = new Scene(root, COLUMNS * CELL_SIZE + 250, ROWS * CELL_SIZE + 180);</span>
+
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (attachToStage) {</span>
+<span class="nc" id="L163">            stage.setTitle(&quot;Tetris&quot;);</span>
+<span class="nc" id="L164">            stage.setScene(playScene);</span>
+        }
+
+<span class="nc" id="L167">        spawnTetromino();</span>
+<span class="nc" id="L168">        timeline = new Timeline(new KeyFrame(Duration.millis(500), e -&gt; {</span>
+<span class="nc" id="L169">            moveDown();</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">            if (!aiEnabled) {</span>
+<span class="nc" id="L171">                new Thread(() -&gt; {</span>
+                    try {
+<span class="nc" id="L173">                        TetrisClient.sendGameState(this);</span>
+<span class="nc" id="L174">                    } catch (Exception ex) {</span>
+<span class="nc" id="L175">                        System.err.println(&quot;External sync failed: &quot; + ex.getMessage());</span>
+<span class="nc" id="L176">                    }</span>
+<span class="nc" id="L177">                }).start();</span>
+            }
+<span class="nc" id="L179">        }));</span>
+
+<span class="nc" id="L181">        timeline.setCycleCount(Timeline.INDEFINITE);</span>
+<span class="nc" id="L182">        timeline.play();</span>
+
+<span class="nc" id="L184">        final BooleanProperty paused = new SimpleBooleanProperty(false);</span>
+<span class="nc" id="L185">        playScene.setOnKeyPressed(e -&gt; {</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">            if (e.getCode() == KeyCode.P) {</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">                boolean p = !paused.get();</span>
+<span class="nc" id="L188">                paused.set(p);</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">                if (p) timeline.pause(); else timeline.play();</span>
+<span class="nc" id="L190">                pauseHint.setVisible(p);</span>
+<span class="nc" id="L191">                return;</span>
+            }
+<span class="nc bnc" id="L193" title="All 6 branches missed.">            if (paused.get() || currentTetromino == null || aiEnabled) return;</span>
+<span class="nc bnc" id="L194" title="All 5 branches missed.">            switch (e.getCode()) {</span>
+<span class="nc" id="L195">                case LEFT -&gt; currentTetromino.move(-1, 0);</span>
+<span class="nc" id="L196">                case RIGHT -&gt; currentTetromino.move(1, 0);</span>
+<span class="nc" id="L197">                case DOWN -&gt; moveDown();</span>
+<span class="nc" id="L198">                case UP -&gt; currentTetromino.rotate();</span>
+            }
+<span class="nc" id="L200">        });</span>
+
+<span class="nc" id="L202">        playScene.getRoot().requestFocus();</span>
+<span class="nc" id="L203">    }</span>
+
+    private void drawGrid(GraphicsContext gc) {
+<span class="nc" id="L206">        gc.setStroke(Color.LIGHTGRAY);</span>
+<span class="nc" id="L207">        gc.setLineWidth(1);</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        for (int x = 0; x &lt;= COLUMNS * CELL_SIZE; x += CELL_SIZE)</span>
+<span class="nc" id="L209">            gc.strokeLine(x + 0.5, 0.5, x + 0.5, ROWS * CELL_SIZE + 0.5);</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        for (int y = 0; y &lt;= ROWS * CELL_SIZE; y += CELL_SIZE)</span>
+<span class="nc" id="L211">            gc.strokeLine(0.5, y + 0.5, COLUMNS * CELL_SIZE + 0.5, y + 0.5);</span>
+<span class="nc" id="L212">    }</span>
+
+    public void moveDown() {
+<span class="nc bnc" id="L215" title="All 2 branches missed.">        if (currentTetromino != null) {</span>
+<span class="nc" id="L216">            boolean moved = currentTetromino.move(0, 1);</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">            if (!moved) {</span>
+<span class="nc" id="L218">                AudioManager.playPieceFallSound();</span>
+<span class="nc" id="L219">                lockedBlocks.addAll(currentTetromino.getBlocks());</span>
+<span class="nc" id="L220">                currentTetromino = null;</span>
+<span class="nc" id="L221">                clearFullLines();</span>
+<span class="nc bnc" id="L222" title="All 2 branches missed.">                if (sharedTetromino) SameTetromino.nextRound();</span>
+<span class="nc" id="L223">                spawnTetromino();</span>
+            }
+        }
+<span class="nc" id="L226">    }</span>
+
+    private void spawnTetromino() {
+<span class="nc" id="L229">        System.out.println(&quot;[PlayScreen] Shared next shape: &quot; + java.util.Arrays.deepToString(SameTetromino.getSharedShape()));</span>
+
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        if (nextTetromino == null) {</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">            if (initialShape != null) {</span>
+<span class="nc" id="L233">                nextTetromino = new Tetromino(initialShape);</span>
+<span class="nc" id="L234">                initialShape = null; // use only once</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">            } else if (sharedTetromino) {</span>
+<span class="nc" id="L236">                nextTetromino = new Tetromino(SameTetromino.getSharedShape());</span>
+            } else {
+<span class="nc" id="L238">                nextTetromino = new Tetromino(sharedTetromino);</span>
+            }
+        }
+
+<span class="nc" id="L242">        currentTetromino = nextTetromino;</span>
+
+<span class="nc bnc" id="L244" title="All 2 branches missed.">        if (currentTetromino.isColliding()) {</span>
+<span class="nc" id="L245">            gameOver();</span>
+<span class="nc" id="L246">            return;</span>
+        }
+
+<span class="nc" id="L249">        gamePane.getChildren().addAll(currentTetromino.getBlocks());</span>
+
+
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        if (sharedTetromino) {</span>
+<span class="nc" id="L253">            nextTetromino = new Tetromino(SameTetromino.getSharedShape());</span>
+        } else {
+<span class="nc" id="L255">            nextTetromino = new Tetromino(sharedTetromino);</span>
+        }
+
+<span class="nc" id="L258">        drawNextPreview();</span>
+<span class="nc" id="L259">    }</span>
+
+
+
+    private void drawNextPreview() {
+<span class="nc" id="L264">        GraphicsContext gc = nextPreview.getGraphicsContext2D();</span>
+<span class="nc" id="L265">        gc.clearRect(0, 0, 80, 80);</span>
+<span class="nc" id="L266">        gc.setFill(Color.GRAY);</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">        for (int[] cell : nextTetromino.getShape()) {</span>
+<span class="nc" id="L268">            gc.fillRect((cell[0] + 2) * 15, (cell[1] + 2) * 15, 15, 15);</span>
+        }
+<span class="nc" id="L270">    }</span>
+
+    public void clearFullLines() {
+<span class="fc" id="L273">        int linesCleared = 0;</span>
+<span class="fc bfc" id="L274" title="All 2 branches covered.">        for (int row = ROWS - 1; row &gt;= 0; row--) {</span>
+<span class="fc" id="L275">            int blocksInRow = 0;</span>
+<span class="fc bfc" id="L276" title="All 2 branches covered.">            for (int col = 0; col &lt; COLUMNS; col++) {</span>
+<span class="fc" id="L277">                boolean blockFound = false;</span>
+<span class="fc bfc" id="L278" title="All 2 branches covered.">                for (Rectangle r : lockedBlocks) {</span>
+<span class="fc" id="L279">                    int blockRow = (int) ((r.getY() - 1) / CELL_SIZE);</span>
+<span class="fc" id="L280">                    int blockCol = (int) (r.getX() / CELL_SIZE);</span>
+<span class="fc bfc" id="L281" title="All 4 branches covered.">                    if (blockRow == row &amp;&amp; blockCol == col) { blockFound = true; break; }</span>
+<span class="fc" id="L282">                }</span>
+<span class="fc bfc" id="L283" title="All 2 branches covered.">                if (blockFound) blocksInRow++;</span>
+            }
+<span class="fc bfc" id="L285" title="All 2 branches covered.">            if (blocksInRow == COLUMNS) {</span>
+<span class="fc" id="L286">                removeRow(row);</span>
+<span class="fc" id="L287">                row++;</span>
+<span class="fc" id="L288">                linesCleared++;</span>
+<span class="fc" id="L289">                AudioManager.playLineSound();</span>
+            }
+        }
+<span class="pc bpc" id="L292" title="1 of 2 branches missed.">        if (linesCleared &gt; 0) {</span>
+<span class="fc" id="L293">            totalLines += linesCleared;</span>
+<span class="pc bpc" id="L294" title="4 of 5 branches missed.">            score += switch (linesCleared) {</span>
+<span class="pc" id="L295">                case 1 -&gt; 150; case 2 -&gt; 300; case 3 -&gt; 400; case 4 -&gt; 500; default -&gt; 0;</span>
+            };
+<span class="fc" id="L297">            linesLabel.setText(&quot;Lines Erased: &quot; + totalLines);</span>
+<span class="fc" id="L298">            scoreLabel.setText(&quot;Score: &quot; + score);</span>
+        }
+<span class="fc" id="L300">    }</span>
+
+    //temporary debug change
+
+<span class="fc" id="L304">    private int[][] initialShape = null;</span>
+
+    public void setInitialShape(int[][] shape) {
+<span class="nc" id="L307">        this.initialShape = shape;</span>
+<span class="nc" id="L308">    }</span>
+
+    private void removeRow(int rowToRemove) {
+<span class="fc" id="L311">        List&lt;Rectangle&gt; toRemove = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L312">        List&lt;Rectangle&gt; toMoveDown = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L313" title="All 2 branches covered.">        for (Rectangle r : lockedBlocks) {</span>
+<span class="fc" id="L314">            int blockRow = (int) ((r.getY() - 1) / CELL_SIZE);</span>
+<span class="pc bpc" id="L315" title="1 of 2 branches missed.">            if (blockRow == rowToRemove) toRemove.add(r);</span>
+<span class="nc bnc" id="L316" title="All 2 branches missed.">            else if (blockRow &lt; rowToRemove) toMoveDown.add(r);</span>
+<span class="fc" id="L317">        }</span>
+<span class="fc bfc" id="L318" title="All 2 branches covered.">        for (Rectangle r : toRemove) { gamePane.getChildren().remove(r); lockedBlocks.remove(r); }</span>
+<span class="pc bpc" id="L319" title="1 of 2 branches missed.">        for (Rectangle r : toMoveDown) r.setY(r.getY() + CELL_SIZE);</span>
+<span class="fc" id="L320">    }</span>
+
+    private void gameOver() {
+<span class="nc" id="L323">        timeline.stop();</span>
+<span class="nc" id="L324">        Alert alert = new Alert(Alert.AlertType.INFORMATION);</span>
+<span class="nc" id="L325">        alert.setTitle(&quot;Game Over&quot;);</span>
+<span class="nc" id="L326">        alert.setHeaderText(&quot;Your score: &quot; + score);</span>
+<span class="nc" id="L327">        TextInputDialog dialog = new TextInputDialog();</span>
+<span class="nc" id="L328">        dialog.setTitle(&quot;High Score&quot;);</span>
+<span class="nc" id="L329">        dialog.setHeaderText(&quot;Enter your name:&quot;);</span>
+<span class="nc" id="L330">        dialog.setContentText(&quot;Name:&quot;);</span>
+<span class="nc" id="L331">        dialog.showAndWait().ifPresent(name -&gt; ScoreManager.add(name, score));</span>
+<span class="nc" id="L332">        alert.showAndWait();</span>
+<span class="nc" id="L333">    }</span>
+
+<span class="nc" id="L335">    public Tetromino getCurrentTetromino() { return currentTetromino; }</span>
+
+
+    public class Tetromino {
+<span class="nc" id="L339">        private Rectangle[] squares = new Rectangle[4];</span>
+        private int[][] shape;
+<span class="nc" id="L341">        private int x = COLUMNS / 2 - 1;</span>
+<span class="nc" id="L342">        private int y = 0;</span>
+
+<span class="nc" id="L344">        Tetromino(int[][] predefinedShape) {</span>
+<span class="nc" id="L345">            shape = predefinedShape;</span>
+<span class="nc" id="L346">            Color color = Color.color(Math.random(), Math.random(), Math.random());</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">            for (int i = 0; i &lt; 4; i++) {</span>
+<span class="nc" id="L348">                squares[i] = new Rectangle(CELL_SIZE, CELL_SIZE);</span>
+<span class="nc" id="L349">                squares[i].setFill(color);</span>
+<span class="nc" id="L350">                squares[i].setStroke(Color.BLACK);</span>
+            }
+<span class="nc" id="L352">            updatePositions();</span>
+<span class="nc" id="L353">        }</span>
+
+
+<span class="nc" id="L356">        Tetromino(boolean shared) {</span>
+<span class="nc" id="L357">            shape = TetrominoShapes.getRandomShape(shared);</span>
+<span class="nc" id="L358">            Color color = Color.color(Math.random(), Math.random(), Math.random());</span>
+<span class="nc bnc" id="L359" title="All 2 branches missed.">            for (int i = 0; i &lt; 4; i++) {</span>
+<span class="nc" id="L360">                squares[i] = new Rectangle(CELL_SIZE, CELL_SIZE);</span>
+<span class="nc" id="L361">                squares[i].setFill(color);</span>
+<span class="nc" id="L362">                squares[i].setStroke(Color.BLACK);</span>
+            }
+<span class="nc" id="L364">            updatePositions();</span>
+<span class="nc" id="L365">        }</span>
+
+        boolean move(int dx, int dy) {
+<span class="nc" id="L368">            x += dx; y += dy;</span>
+<span class="nc bnc" id="L369" title="All 4 branches missed.">            if (isOutOfBounds() || isColliding()) { x -= dx; y -= dy; return false; }</span>
+<span class="nc" id="L370">            updatePositions(); return true;</span>
+        }
+
+        void rotate() {
+<span class="nc" id="L374">            int[][] rotated = new int[4][2];</span>
+<span class="nc bnc" id="L375" title="All 2 branches missed.">            for (int i = 0; i &lt; 4; i++) { rotated[i][0] = -shape[i][1]; rotated[i][1] = shape[i][0]; }</span>
+<span class="nc" id="L376">            int[][] original = shape;</span>
+<span class="nc" id="L377">            shape = rotated;</span>
+<span class="nc bnc" id="L378" title="All 4 branches missed.">            if (isOutOfBounds() || isColliding()) shape = original;</span>
+<span class="nc" id="L379">            else updatePositions();</span>
+<span class="nc" id="L380">        }</span>
+
+        void updatePositions() {
+<span class="nc bnc" id="L383" title="All 2 branches missed.">            for (int i = 0; i &lt; 4; i++) {</span>
+<span class="nc" id="L384">                squares[i].setX((x + shape[i][0]) * CELL_SIZE);</span>
+<span class="nc" id="L385">                squares[i].setY((y + shape[i][1]) * CELL_SIZE + 1);</span>
+            }
+<span class="nc" id="L387">        }</span>
+
+        boolean isOutOfBounds() {
+<span class="nc bnc" id="L390" title="All 2 branches missed.">            for (int i = 0; i &lt; 4; i++) {</span>
+<span class="nc" id="L391">                int newX = x + shape[i][0]; int newY = y + shape[i][1];</span>
+<span class="nc bnc" id="L392" title="All 8 branches missed.">                if (newX &lt; 0 || newX &gt;= COLUMNS || newY &gt;= ROWS || newY &lt; 0) return true;</span>
+            }
+<span class="nc" id="L394">            return false;</span>
+        }
+
+        boolean isColliding() {
+<span class="nc bnc" id="L398" title="All 2 branches missed.">            for (Rectangle block : lockedBlocks) {</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">                for (int i = 0; i &lt; 4; i++) {</span>
+<span class="nc" id="L400">                    int blockX = (int) (block.getX() / CELL_SIZE);</span>
+<span class="nc" id="L401">                    int blockY = (int) ((block.getY() - 1) / CELL_SIZE);</span>
+<span class="nc" id="L402">                    int newX = x + shape[i][0];</span>
+<span class="nc" id="L403">                    int newY = y + shape[i][1];</span>
+<span class="nc bnc" id="L404" title="All 4 branches missed.">                    if (blockX == newX &amp;&amp; blockY == newY) return true;</span>
+                }
+<span class="nc" id="L406">            }</span>
+<span class="nc" id="L407">            return false;</span>
+        }
+
+        List&lt;Rectangle&gt; getBlocks() {
+<span class="nc" id="L411">            List&lt;Rectangle&gt; list = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">            for (Rectangle r : squares) list.add(r);</span>
+<span class="nc" id="L413">            return list;</span>
+        }
+
+<span class="nc" id="L416">        public int[][] getShape() { return shape; }</span>
+
+
+        public Tetromino cloneTetromino() {
+<span class="nc" id="L420">            Tetromino copy = new Tetromino(sharedTetromino);</span>
+<span class="nc" id="L421">            copy.x = this.x;</span>
+<span class="nc" id="L422">            copy.y = this.y;</span>
+<span class="nc" id="L423">            copy.shape = new int[4][2];</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">            for (int i = 0; i &lt; 4; i++) {</span>
+<span class="nc" id="L425">                copy.shape[i][0] = this.shape[i][0];</span>
+<span class="nc" id="L426">                copy.shape[i][1] = this.shape[i][1];</span>
+            }
+<span class="nc" id="L428">            return copy;</span>
+
+        }
+        public int getX() {
+<span class="nc" id="L432">            return x;</span>
+        }
+
+        public int getY() {
+<span class="nc" id="L436">            return y;</span>
+        }
+    }
+
+<span class="nc" id="L440">    static class TetrominoShapes {</span>
+<span class="nc" id="L441">        private static final int[][][] SHAPES = {</span>
+                {{0,0},{1,0},{-1,0},{0,1}},
+                {{0,0},{1,0},{0,1},{1,1}},
+                {{0,0},{1,0},{-1,0},{-1,1}},
+                {{0,0},{1,0},{-1,0},{1,1}},
+                {{0,0},{1,0},{0,1},{-1,1}},
+                {{0,0},{-1,0},{0,1},{1,1}},
+                {{0,0},{-1,0},{1,0},{2,0}}
+        };
+
+        public static int[][] getRandomShape(boolean shared) {
+<span class="nc bnc" id="L452" title="All 2 branches missed.">            if (shared)</span>
+<span class="nc" id="L453">                return SameTetromino.getSharedShape();  // ✅ shared sequence</span>
+            else {
+<span class="nc" id="L455">                return SHAPES[new Random().nextInt(SHAPES.length)];</span>
+            }
+        }
+
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

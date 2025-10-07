@@ -39,12 +39,13 @@ public class Main extends Application {
 
         Button btnPlay = new Button("Play");
         Button btnTwoPlayer = new Button("Two Player Mode");
+        Button btnAIMode = new Button("vs AI Mode");
         Button btnExternal = new Button("External Mode");
         Button btnConfig = new Button("Configuration");
         Button btnHighScore = new Button("High Scores");
         Button btnExit = new Button("Exit");
 
-        for (Button b : new Button[]{btnPlay, btnTwoPlayer, btnExternal, btnConfig, btnHighScore, btnExit}) {
+        for (Button b : new Button[]{btnPlay, btnTwoPlayer, btnAIMode, btnExternal, btnConfig, btnHighScore, btnExit}) {
             b.setPrefWidth(240);
         }
 
@@ -56,6 +57,11 @@ public class Main extends Application {
         btnTwoPlayer.setOnAction(e -> {
             TwoPlayerScreen twoPlayerScreen = new TwoPlayerScreen(COLUMNS, ROWS, CELL_SIZE);
             twoPlayerScreen.show(primaryStage, false);
+        });
+
+        btnAIMode.setOnAction(e -> {
+            TwoPlayerScreen twoPlayerScreen = new TwoPlayerScreen(COLUMNS, ROWS, CELL_SIZE);
+            twoPlayerScreen.show(primaryStage, true);
         });
 
         btnExternal.setOnAction(e -> {
@@ -94,7 +100,7 @@ public class Main extends Application {
             alert.showAndWait().ifPresent(bt -> { if (bt == yes) Platform.exit(); });
         });
 
-        VBox box = new VBox(18, title, btnPlay, btnTwoPlayer, btnExternal, btnConfig, btnHighScore, btnExit);
+        VBox box = new VBox(18, title, btnPlay, btnTwoPlayer, btnAIMode, btnExternal, btnConfig, btnHighScore, btnExit);
         box.setAlignment(Pos.TOP_CENTER);
         box.setPadding(new Insets(20, 30, 20, 30));
 
