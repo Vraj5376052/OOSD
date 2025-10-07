@@ -30,6 +30,10 @@ public class PlayScreen {
     private final int ROWS;
     private final int CELL_SIZE;
 
+    private boolean musicOn = true;
+    private boolean gamePaused = false;
+
+
     private BorderPane root;
     public Parent getSceneRoot() { return root; }
     public boolean isAIEnabled() { return aiEnabled; }
@@ -120,13 +124,26 @@ public class PlayScreen {
         infoBox.setAlignment(Pos.TOP_LEFT);
 
         Label infoTitle = new Label("Game Info");
+        Label musicStatus = new Label("Music: ON");
+        Label soundStatus = new Label("Sound: ON");
+
         Label playerType = new Label("Player Type: " + (aiPlay ? "AI" : "Human"));
         linesLabel = new Label("Lines Erased: 0");
         scoreLabel = new Label("Score: 0");
         Label nextLabel = new Label("Next Tetromino:");
         nextPreview = new Canvas(80, 80);
 
-        infoBox.getChildren().addAll(infoTitle, playerType, linesLabel, scoreLabel, nextLabel, nextPreview);
+        infoBox.getChildren().addAll(
+                infoTitle,
+                playerType,
+                linesLabel,
+                scoreLabel,
+                musicStatus,
+                soundStatus,
+                nextLabel,
+                nextPreview
+        );
+
 
         HBox center = new HBox(20, infoBox, playArea);
         center.setAlignment(Pos.CENTER);
@@ -170,7 +187,7 @@ public class PlayScreen {
             moveDown();
             if (!aiEnabled) {
                 new Thread(() -> {
-                    // ✅ Only send game state if external player mode is enabled
+
                     if (Configuration.isExternalPlayerEnabled()) {
                         try {
                             TetrisClient.sendGameState(this);
@@ -188,21 +205,53 @@ public class PlayScreen {
 
         final BooleanProperty paused = new SimpleBooleanProperty(false);
         playScene.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.P) {
+            KeyCode key = e.getCode();
+
+            // Pause/unpause game with P
+            if (key == KeyCode.P) {
                 boolean p = !paused.get();
                 paused.set(p);
                 if (p) timeline.pause(); else timeline.play();
+                pauseHint.setText("Game is paused,\nPress 'P' to continue...");
                 pauseHint.setVisible(p);
                 return;
             }
+
+
+            if (key == KeyCode.M) {
+                boolean music = Main.isMUSIC();
+                Main.setMUSIC(!music);
+                if (music) {
+                    AudioManager.stopBackgroundMusic();
+                    musicStatus.setText("Music: OFF");
+                    System.out.println("[MUSIC] Stopped");
+                } else {
+                    AudioManager.playBackgroundMusic();
+                    musicStatus.setText("Music: ON");
+                    System.out.println("[MUSIC] Resumed");
+                }
+                return;
+            }
+
+
+            if (key == KeyCode.S) {
+                boolean sound = Main.isSOUND_EFFECTS();
+                Main.setSOUND_EFFECTS(!sound);
+                soundStatus.setText(sound ? "Sound: OFF" : "Sound: ON");
+                System.out.println(sound ? "[SOUND EFFECTS] Muted" : "[SOUND EFFECTS] Enabled");
+                return;
+            }
+
             if (paused.get() || currentTetromino == null || aiEnabled) return;
-            switch (e.getCode()) {
+            switch (key) {
                 case LEFT -> currentTetromino.move(-1, 0);
                 case RIGHT -> currentTetromino.move(1, 0);
                 case DOWN -> moveDown();
                 case UP -> currentTetromino.rotate();
             }
         });
+
+
 
         playScene.getRoot().requestFocus();
     }
