@@ -17,7 +17,7 @@ public class SplashScreen {
         Image splashImage = new Image(SplashScreen.class.getResourceAsStream("/images/TetrisImage.jpeg"));
         ImageView splashView = new ImageView(splashImage);
 
-        // Adjust image size (optional)
+
         splashView.setPreserveRatio(true);
         splashView.setFitWidth(480);
         splashView.setFitHeight(360);

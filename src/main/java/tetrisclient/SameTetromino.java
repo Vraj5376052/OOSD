@@ -6,14 +6,14 @@ public class SameTetromino {
     private static Random random;
     private static boolean initialized = false;
 
-    // 🔹 Shared "current" shape buffer
+    //Shared shape
     private static int[][] currentShape;
 
     public static void setSeed(long seed) {
         random = new Random(seed);
         initialized = true;
         currentShape = null;
-        System.out.println("[SameTetromino] ✅ Seed set: " + seed);
+        System.out.println("[SameTetromino] Seed set: " + seed);
     }
 
     private static int[][][] SHAPES = {
@@ -26,20 +26,20 @@ public class SameTetromino {
             {{0,0},{-1,0},{1,0},{2,0}}      // I
     };
 
-    // 🔹 Returns the same shape until nextRound() is called
+    //Returns the same shape until Next Round is called
     public static int[][] getSharedShape() {
         if (!initialized) setSeed(System.currentTimeMillis());
         if (currentShape == null) {
             int idx = random.nextInt(SHAPES.length);
             currentShape = SHAPES[idx];
-            System.out.println("[SameTetromino] 🎲 New shared shape index: " + idx);
+            System.out.println("[SameTetromino] New shared shape index: " + idx);
         } else {
-            System.out.println("[SameTetromino] 🔁 Returning same shape as previous round");
+            System.out.println("[SameTetromino] Returning same shape as previous round");
         }
         return currentShape;
     }
 
-    // 🔹 Advance RNG for next round (called after both have placed)
+
     public static void nextRound() {
         currentShape = null;
     }

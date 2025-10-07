@@ -131,7 +131,7 @@ public class Main extends Application {
         stage.setScene(scene);
     }
 
-    // ===== Static Getters & Setters for Configuration =====
+    // getters and setters
     public static int getColumns() { return COLUMNS; }
     public static void setColumns(int columns) { COLUMNS = columns; }
 

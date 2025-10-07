@@ -27,7 +27,7 @@ public class TwoPlayerScreen {
 
         long sharedSeed = System.currentTimeMillis();
         SameTetromino.setSeed(sharedSeed);
-        System.out.println("[TwoPlayerScreen] 🎯 Shared seed set: " + sharedSeed);
+        System.out.println("[TwoPlayerScreen] Shared seed set: " + sharedSeed);
 
 
         player1Screen = new PlayScreen(cols, rows, cellSize, true);
@@ -35,7 +35,7 @@ public class TwoPlayerScreen {
 
 
         int[][] firstShape = SameTetromino.getSharedShape();
-        System.out.println("[TwoPlayerScreen] 🧩 First shared shape: " + java.util.Arrays.deepToString(firstShape));
+        System.out.println("[TwoPlayerScreen], First shared shape: " + java.util.Arrays.deepToString(firstShape));
         player1Screen.setInitialShape(firstShape);
         player2Screen.setInitialShape(firstShape);
     }
