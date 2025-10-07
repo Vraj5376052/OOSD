@@ -168,18 +168,17 @@ public class PlayScreen {
         spawnTetromino();
         timeline = new Timeline(new KeyFrame(Duration.millis(500), e -> {
             moveDown();
-            if (!aiEnabled) {
+
+            if (!aiEnabled && Configuration.isExternalPlayerEnabled()) {
                 new Thread(() -> {
                     try {
                         TetrisClient.sendGameState(this, stage);
-
-
-
                     } catch (Exception ex) {
                         System.err.println("External sync failed: " + ex.getMessage());
                     }
                 }).start();
             }
+
         }));
 
         timeline.setCycleCount(Timeline.INDEFINITE);
