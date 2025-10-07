@@ -22,7 +22,6 @@ class PlayScreenTest {
     @Test
     void testClearFullLinesAndScore() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-
         Platform.runLater(() -> {
             try {
                 PlayScreen screen = new PlayScreen(10, 20, 30);
@@ -62,19 +61,16 @@ class PlayScreenTest {
                 scoreLabelField.setAccessible(true);
                 scoreLabelField.set(screen, new javafx.scene.control.Label());
 
-                // Call the method
                 screen.clearFullLines();
 
                 assertEquals(150, scoreField.get(screen));
                 assertEquals(1, totalLinesField.get(screen));
-
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 latch.countDown();
             }
         });
-
         latch.await();
     }
 }

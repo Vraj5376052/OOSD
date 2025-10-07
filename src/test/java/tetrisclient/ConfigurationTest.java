@@ -33,8 +33,7 @@ class ConfigurationTest {
         Platform.runLater(() -> {
             Stage stage = new Stage();
             Configuration.show(stage, () -> System.out.println("Back pressed"));
-            // Simulate back action
-            stage.close();
+            stage.close(); // simulate back
             latch.countDown();
         });
         latch.await();

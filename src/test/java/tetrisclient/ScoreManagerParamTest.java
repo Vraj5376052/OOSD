@@ -16,7 +16,7 @@ class ScoreManagerParamTest {
             "Eve, 300"
     })
     void testAddScoreParameterized(String name, int score) {
-        ScoreManager.clear();  // start fresh each time
+        ScoreManager.clear();
         ScoreManager.add(name, score);
 
         assertEquals(1, ScoreManager.getScores().size());
