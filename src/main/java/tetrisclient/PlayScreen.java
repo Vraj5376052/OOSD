@@ -61,7 +61,6 @@ public class PlayScreen {
         this.ROWS = rows;
         this.CELL_SIZE = cellSize;
         this.sharedTetromino = sharedTetromino;
-
     }
 
     public int getColumns() { return COLUMNS; }
@@ -166,17 +165,18 @@ public class PlayScreen {
         }
 
         spawnTetromino();
+
         timeline = new Timeline(new KeyFrame(Duration.millis(500), e -> {
             moveDown();
             if (!aiEnabled) {
                 new Thread(() -> {
-                    try {
-                        TetrisClient.sendGameState(this, stage);
-
-
-
-                    } catch (Exception ex) {
-                        System.err.println("External sync failed: " + ex.getMessage());
+                    // ✅ Only send game state if external player mode is enabled
+                    if (Configuration.isExternalPlayerEnabled()) {
+                        try {
+                            TetrisClient.sendGameState(this, stage);
+                        } catch (Exception ex) {
+                            System.err.println("[External Sync Failed] " + ex.getMessage());
+                        }
                     }
                 }).start();
             }
@@ -252,7 +252,6 @@ public class PlayScreen {
 
         gamePane.getChildren().addAll(currentTetromino.getBlocks());
 
-
         if (sharedTetromino) {
             nextTetromino = new Tetromino(SameTetromino.getSharedShape());
         } else {
@@ -261,8 +260,6 @@ public class PlayScreen {
 
         drawNextPreview();
     }
-
-
 
     private void drawNextPreview() {
         GraphicsContext gc = nextPreview.getGraphicsContext2D();
@@ -303,8 +300,6 @@ public class PlayScreen {
         }
     }
 
-    //temporary debug change
-
     private int[][] initialShape = null;
 
     public void setInitialShape(int[][] shape) {
@@ -338,7 +333,6 @@ public class PlayScreen {
 
     public Tetromino getCurrentTetromino() { return currentTetromino; }
 
-
     public class Tetromino {
         private Rectangle[] squares = new Rectangle[4];
         private int[][] shape;
@@ -355,7 +349,6 @@ public class PlayScreen {
             }
             updatePositions();
         }
-
 
         Tetromino(boolean shared) {
             shape = TetrominoShapes.getRandomShape(shared);
@@ -419,8 +412,6 @@ public class PlayScreen {
 
         public int[][] getShape() { return shape; }
 
-
-
         public Tetromino cloneTetromino() {
             Tetromino copy = new Tetromino(sharedTetromino);
             copy.x = this.x;
@@ -431,15 +422,10 @@ public class PlayScreen {
                 copy.shape[i][1] = this.shape[i][1];
             }
             return copy;
-
-        }
-        public int getX() {
-            return x;
         }
 
-        public int getY() {
-            return y;
-        }
+        public int getX() { return x; }
+        public int getY() { return y; }
     }
 
     static class TetrominoShapes {
@@ -455,15 +441,13 @@ public class PlayScreen {
 
         public static int[][] getRandomShape(boolean shared) {
             if (shared)
-                return SameTetromino.getSharedShape();  // ✅ shared sequence
-            else {
+                return SameTetromino.getSharedShape();
+            else
                 return SHAPES[new Random().nextInt(SHAPES.length)];
-            }
-
         }
-
     }
-    // ✅ Add this method here (right before last brace)
+
+
     public void stopGame() {
         if (timeline != null) {
             timeline.stop();

@@ -65,26 +65,36 @@ public class Main extends Application {
         });
 
         btnExternal.setOnAction(e -> {
-            // Create a PlayScreen and show it
+            // 🔒 Check if external player mode is enabled in configuration
+            if (!Configuration.isExternalPlayerEnabled()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("External Player Disabled");
+                alert.setHeaderText(null);
+                alert.setContentText("External Player mode is turned OFF in Configuration.\n\n"
+                        + "Please enable it first to use External Mode.");
+                alert.showAndWait();
+                return;
+            }
+
+
             PlayScreen playScreen = new PlayScreen(COLUMNS, ROWS, CELL_SIZE);
             playScreen.show(primaryStage, () -> primaryStage.setScene(homeScene), false, true);
 
-            // Send game state to external server in a background thread
             new Thread(() -> {
                 try {
                     TetrisClient.sendGameState(playScreen, primaryStage);
 
-
                 } catch (Exception ex) {
-                    ex.printStackTrace();
                     Platform.runLater(() -> {
-                        Alert error = new Alert(Alert.AlertType.ERROR,
-                                "Failed to connect to external server:\n" + ex.getMessage(),
-                                ButtonType.OK);
+                        Alert error = new Alert(Alert.AlertType.ERROR);
+                        error.setTitle("Server Not Running");
+                        error.setHeaderText("Cannot connect to Tetris Server");
+                        error.setContentText("Please start the server manually before using External Player.");
                         error.showAndWait();
                     });
                 }
             }).start();
+
         });
 
         btnConfig.setOnAction(e -> showConfigScreen(primaryStage));
