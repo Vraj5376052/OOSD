@@ -343,7 +343,7 @@ public class PlayScreen {
         if (linesCleared > 0) {
             totalLines += linesCleared;
             score += switch (linesCleared) {
-                case 1 -> 150; case 2 -> 300; case 3 -> 400; case 4 -> 500; default -> 0;
+                case 1 -> 100; case 2 -> 300; case 3 -> 600; case 4 -> 1000; default -> 0;
             };
             linesLabel.setText("Lines Erased: " + totalLines);
             scoreLabel.setText("Score: " + score);
