@@ -87,10 +87,9 @@ public class Configuration {
         extendCheck.setSelected(Main.isEXTEND_MODE());
         extendCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
             Main.setEXTEND_MODE(newVal);
+            Configuration.setExternalPlayerEnabled(newVal);
             extendValue.setText(newVal ? "ON" : "OFF");
-            externalPlayerEnabled = newVal;
         });
-
 
 
         // Grid layout
@@ -150,8 +149,12 @@ public class Configuration {
         stage.setTitle("Configuration");
         stage.setScene(configScene);
     }
+
     public static boolean isExternalPlayerEnabled() {
         return externalPlayerEnabled;
     }
 
+    public static void setExternalPlayerEnabled(boolean enabled) {
+        externalPlayerEnabled = enabled;
+    }
 }

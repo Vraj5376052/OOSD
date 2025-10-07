@@ -13,7 +13,6 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 
-    // Constants and configuration variables
     private static final int CELL_SIZE = 30;
     private static int COLUMNS = 10;
     private static int ROWS = 20;
@@ -24,38 +23,29 @@ public class Main extends Application {
     private static boolean EXTERNAL_PLAY = false;
     private static boolean EXTEND_MODE = false;
 
-    // Home menu scene
     private Scene homeScene;
 
-    /**
-     * Application entry point for JavaFX.
-     */
     @Override
-    // Show splash screen
     public void start(Stage primaryStage) {
         SplashScreen.show(primaryStage, () -> showMainMenu(primaryStage));
     }
 
-    /**
-     * Builds and displays the main menu.
-     */
-    private void showMainMenu(Stage primaryStage) {
+    public void showMainMenu(Stage primaryStage) {
         Label title = new Label("Main Menu");
         title.setFont(Font.font("SansSerif", FontWeight.BOLD, 22));
 
-        // Initialize audio manager and start background music
         AudioManager.initialize();
         AudioManager.playBackgroundMusic();
 
-        // Menu buttons
         Button btnPlay = new Button("Play");
         Button btnTwoPlayer = new Button("Two Player Mode");
+        Button btnAIMode = new Button("vs AI Mode");
         Button btnExternal = new Button("External Mode");
         Button btnConfig = new Button("Configuration");
         Button btnHighScore = new Button("High Scores");
         Button btnExit = new Button("Exit");
 
-        for (Button b : new Button[]{btnPlay, btnTwoPlayer, btnExternal, btnConfig, btnHighScore, btnExit}) {
+        for (Button b : new Button[]{btnPlay, btnTwoPlayer, btnAIMode, btnExternal, btnConfig, btnHighScore, btnExit}) {
             b.setPrefWidth(240);
         }
 
@@ -69,25 +59,43 @@ public class Main extends Application {
             twoPlayerScreen.show(primaryStage, false);
         });
 
+        btnAIMode.setOnAction(e -> {
+            TwoPlayerScreen twoPlayerScreen = new TwoPlayerScreen(COLUMNS, ROWS, CELL_SIZE);
+            twoPlayerScreen.show(primaryStage, true);
+        });
+
         btnExternal.setOnAction(e -> {
-            // Create a PlayScreen and show it
+            // 🔒 Check if external player mode is enabled in configuration
+            if (!Configuration.isExternalPlayerEnabled()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("External Player Disabled");
+                alert.setHeaderText(null);
+                alert.setContentText("External Player mode is turned OFF in Configuration.\n\n"
+                        + "Please enable it first to use External Mode.");
+                alert.showAndWait();
+                return;
+            }
+
+
             PlayScreen playScreen = new PlayScreen(COLUMNS, ROWS, CELL_SIZE);
             playScreen.show(primaryStage, () -> primaryStage.setScene(homeScene), false, true);
 
-            // Send game state to external server in a background thread
             new Thread(() -> {
                 try {
                     TetrisClient.sendGameState(playScreen);
+
+
                 } catch (Exception ex) {
-                    ex.printStackTrace();
                     Platform.runLater(() -> {
-                        Alert error = new Alert(Alert.AlertType.ERROR,
-                                "Failed to connect to external server:\n" + ex.getMessage(),
-                                ButtonType.OK);
+                        Alert error = new Alert(Alert.AlertType.ERROR);
+                        error.setTitle("Server Not Running");
+                        error.setHeaderText("Cannot connect to Tetris Server");
+                        error.setContentText("Please start the server manually before using External Player.");
                         error.showAndWait();
                     });
                 }
             }).start();
+
         });
 
         btnConfig.setOnAction(e -> showConfigScreen(primaryStage));
@@ -103,35 +111,27 @@ public class Main extends Application {
             alert.showAndWait().ifPresent(bt -> { if (bt == yes) Platform.exit(); });
         });
 
-        // Layout container
-        VBox box = new VBox(18, title, btnPlay, btnTwoPlayer, btnExternal, btnConfig, btnHighScore, btnExit);
+        VBox box = new VBox(18, title, btnPlay, btnTwoPlayer, btnAIMode, btnExternal, btnConfig, btnHighScore, btnExit);
         box.setAlignment(Pos.TOP_CENTER);
         box.setPadding(new Insets(20, 30, 20, 30));
 
-        // Create scene and set stage
         homeScene = new Scene(box, 480, 360);
         primaryStage.setTitle("Tetris");
         primaryStage.setScene(homeScene);
         primaryStage.show();
     }
 
-    /**
-     * Shows the configuration screen.
-     */
     private void showConfigScreen(Stage stage) {
         Configuration.show(stage, () -> stage.setScene(homeScene));
     }
 
-    /**
-     * Shows the high score screen.
-     */
     private void showHighScoreScreen(Stage stage) {
         Scene scene = HighScoreScreen.create(() -> stage.setScene(homeScene));
         stage.setTitle("High Scores");
         stage.setScene(scene);
     }
 
-    // Static Getters & Setters for Configuration
+    // ===== Static Getters & Setters for Configuration =====
     public static int getColumns() { return COLUMNS; }
     public static void setColumns(int columns) { COLUMNS = columns; }
 
@@ -153,9 +153,6 @@ public class Main extends Application {
     public static boolean isEXTEND_MODE() { return EXTEND_MODE; }
     public static void setEXTEND_MODE(boolean extend) { EXTEND_MODE = extend; }
 
-    /**
-     * launch JavaFX application.
-     */
     public static void main(String[] args) {
         launch(args);
     }
